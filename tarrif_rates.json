@@ -1,0 +1,418 @@
+{
+  "metadata": {
+    "title": "Bangladesh Electricity Tariff Rates & Web-App Billing Engine",
+    "description": "Scalable JSON representation of electricity billing rules designed for static web applications. Formulae are written in valid JavaScript expressions for direct extraction and evaluation. Includes data sources and tension definitions.",
+    "source_repository": "https://bpdb.gov.bd/pages/static-pages/6922dee6933eb65569e1e3b7",
+    "tension_categories": {
+      "LT": "Light Tension",
+      "MT": "Medium Tension",
+      "HT": "High Tension",
+      "EHT": "Extreme High Tension"
+    },
+    "schema_legend": {
+      "dc": "Demand Charge (Tk/kW/month)",
+      "energy": {
+        "t": "Tariff Type (slab, flat, tou)",
+        "ll": "Lifeline (0-50 units) rate",
+        "s1": "Step 1 (0-75 units) rate",
+        "s2": "Step 2 (76-200 units) rate",
+        "s3": "Step 3 (201-300 units) rate",
+        "s4": "Step 4 (301-400 units) rate",
+        "s5": "Step 5 (401-600 units) rate",
+        "s6": "Step 6 (Above 600 units) rate",
+        "f": "Flat Rate",
+        "o": "Off-Peak Rate",
+        "so": "Super Off-Peak Rate",
+        "p": "Peak Rate"
+      }
+    }
+  },
+  "web_app_integration_guide": {
+    "expected_user_inputs": [
+      "total_units", "peak_units", "off_peak_units", "super_off_peak_units", "flat_units", "approved_load_kw", "actual_max_demand_kw", "pf"
+    ],
+    "context_variables": [
+      "rates (Extracted from the selected customer category)",
+      "parameters (Extracted from the selected gazette release)"
+    ],
+    "execution_flow": "1. Fetch 'rates' and 'parameters'. 2. Evaluate 'energy_charge' matching the category's tariff type. 3. Evaluate 'demand_charge'. 4. Evaluate 'surcharges_and_penalties'. 5. Evaluate 'net_bill'. 6. Evaluate 'gross_bill' based on meter type."
+  },
+  "extractable_formulae": {
+    "energy_charge": {
+      "slab": "total_units <= 50 ? (total_units * rates.ll) : ((Math.min(total_units, 75) * rates.s1) + (Math.max(0, Math.min(total_units - 75, 125)) * rates.s2) + (Math.max(0, Math.min(total_units - 200, 100)) * rates.s3) + (Math.max(0, Math.min(total_units - 300, 100)) * rates.s4) + (Math.max(0, Math.min(total_units - 400, 200)) * rates.s5) + (Math.max(0, total_units - 600) * rates.s6))",
+      "flat": "total_units * rates.f",
+      "tou": "((peak_units || 0) * rates.p) + ((off_peak_units || 0) * rates.o) + ((super_off_peak_units || 0) * (rates.so || 0)) + ((flat_units || 0) * (rates.f || 0))"
+    },
+    "demand_charge": {
+      "lt_mt": "approved_load_kw * rates.dc",
+      "ht_eht": "Math.max(actual_max_demand_kw, approved_load_kw * parameters.ht_eht_minimum_dc_percentage) * rates.dc"
+    },
+    "surcharges_and_penalties": {
+      "excess_load_penalty": "actual_max_demand_kw > approved_load_kw ? (actual_max_demand_kw - approved_load_kw) * (rates.dc * parameters.excess_load_penalty_multiplier) : 0",
+      "power_factor_surcharge": "(pf < parameters.power_factor_minimum && pf >= 0.75) ? ec * (((parameters.power_factor_minimum - pf) / 0.01) * parameters.power_factor_surcharge_per_0_01_drop) : 0"
+    },
+    "final_bill": {
+      "net_bill": "ec + base_dc + penalty_dc + pf_surcharge",
+      "gross_bill_prepaid": "(net_bill - (net_bill * parameters.prepaid_rebate_percentage)) * (1 + parameters.vat_percentage)",
+      "gross_bill_postpaid_on_time": "net_bill * (1 + parameters.vat_percentage)",
+      "gross_bill_postpaid_late": "net_bill * (1 + parameters.vat_percentage) + (net_bill * parameters.late_payment_surcharge_percentage)"
+    }
+  },
+  "customer_categories": [
+    {"id": "LT-A", "tension": "LT", "name": "Residential"},
+    {"id": "LT-B", "tension": "LT", "name": "Agricultural & Irrigation Pumps"},
+    {"id": "LT-C1", "tension": "LT", "name": "Small Industry"},
+    {"id": "LT-C2", "tension": "LT", "name": "Construction"},
+    {"id": "LT-D1", "tension": "LT", "name": "Education, Religious & Charitable Institutions, and Hospitals"},
+    {"id": "LT-D2", "tension": "LT", "name": "Street Lights & Water Pumps"},
+    {"id": "LT-D3", "tension": "LT", "name": "Electric Vehicle & Battery Charging Stations"},
+    {"id": "LT-E", "tension": "LT", "name": "Commercial and Office"},
+    {"id": "LT-T", "tension": "LT", "name": "Temporary"},
+    {"id": "MT-1", "tension": "MT", "name": "Residential"},
+    {"id": "MT-2", "tension": "MT", "name": "Commercial and Office"},
+    {"id": "MT-3", "tension": "MT", "name": "Industry"},
+    {"id": "MT-4", "tension": "MT", "name": "Construction"},
+    {"id": "MT-5", "tension": "MT", "name": "General"},
+    {"id": "MT-6", "tension": "MT", "name": "Temporary"},
+    {"id": "MT-7", "tension": "MT", "name": "Electric Vehicle & Battery Charging Stations"},
+    {"id": "MT-8", "tension": "MT", "name": "Agricultural & Irrigation Pumps"},
+    {"id": "HT-1", "tension": "HT", "name": "General"},
+    {"id": "HT-2", "tension": "HT", "name": "Commercial and Office"},
+    {"id": "HT-3", "tension": "HT", "name": "Industry"},
+    {"id": "HT-4", "tension": "HT", "name": "Construction"},
+    {"id": "EHT-1", "tension": "EHT", "name": "General (20 MW to 140 MW)"},
+    {"id": "EHT-2", "tension": "EHT", "name": "General (Above 140 MW)"}
+  ],
+  "gazette_releases": [
+    {
+      "gazette_id": "2026-june-retail.pdf",
+      "gazette_date": "June 03, 2026",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2026/5/e37ed032-9fe9-4717-b84c-92d06c96bcde.pdf",
+      "parameters": {
+        "prepaid_rebate_percentage": 0.005,
+        "late_payment_surcharge_percentage": 0.05,
+        "power_factor_minimum": 0.95,
+        "power_factor_surcharge_per_0_01_drop": 0.0075,
+        "ht_eht_minimum_dc_percentage": 0.80,
+        "excess_load_penalty_multiplier": 2,
+        "vat_percentage": 0.05,
+        "security_deposit_tk_per_kw_postpaid": {
+          "LT_upto_2kW": 480,
+          "LT_above_2kW": 720,
+          "Other_LT": 960,
+          "MT_HT_EHT": 1200
+        }
+      },
+      "rates": [
+        {"id": "LT-A", "dc": 42.0, "energy": {"t": "slab", "ll": 5.32, "s1": 6.18, "s2": 8.50, "s3": 9.10, "s4": 9.62, "s5": 15.01, "s6": 17.35}},
+        {"id": "LT-B", "dc": 42.0, "energy": {"t": "flat", "f": 6.04}},
+        {"id": "LT-C1", "dc": 48.0, "energy": {"t": "tou", "f": 12.73, "o": 11.45, "p": 15.27}},
+        {"id": "LT-C2", "dc": 120.0, "energy": {"t": "flat", "f": 18.09}},
+        {"id": "LT-D1", "dc": 60.0, "energy": {"t": "flat", "f": 9.05}},
+        {"id": "LT-D2", "dc": 90.0, "energy": {"t": "flat", "f": 11.46}},
+        {"id": "LT-D3", "dc": 90.0, "energy": {"t": "tou", "f": 11.36, "o": 10.22, "so": 9.09, "p": 14.20}},
+        {"id": "LT-E", "dc": 90.0, "energy": {"t": "tou", "f": 15.36, "o": 13.82, "p": 18.43}},
+        {"id": "LT-T", "dc": 120.0, "energy": {"t": "flat", "f": 23.81}},
+        {"id": "MT-1", "dc": 90.0, "energy": {"t": "tou", "f": 12.50, "o": 11.25, "p": 15.62}},
+        {"id": "MT-2", "dc": 90.0, "energy": {"t": "tou", "f": 13.93, "o": 12.54, "p": 17.41}},
+        {"id": "MT-3", "dc": 90.0, "energy": {"t": "tou", "f": 12.85, "o": 11.56, "p": 16.06}},
+        {"id": "MT-4", "dc": 120.0, "energy": {"t": "tou", "f": 17.16, "o": 15.44, "p": 21.45}},
+        {"id": "MT-5", "dc": 90.0, "energy": {"t": "tou", "f": 12.58, "o": 11.32, "p": 15.72}},
+        {"id": "MT-6", "dc": 120.0, "energy": {"t": "flat", "f": 22.56}},
+        {"id": "MT-7", "dc": 90.0, "energy": {"t": "tou", "f": 11.31, "o": 10.18, "so": 9.05, "p": 14.14}},
+        {"id": "MT-8", "dc": 90.0, "energy": {"t": "tou", "f": 7.38, "o": 6.64, "p": 9.23}},
+        {"id": "HT-1", "dc": 90.0, "energy": {"t": "tou", "f": 12.54, "o": 11.28, "p": 15.67}},
+        {"id": "HT-2", "dc": 90.0, "energy": {"t": "tou", "f": 13.64, "o": 12.28, "p": 17.05}},
+        {"id": "HT-3", "dc": 90.0, "energy": {"t": "tou", "f": 12.75, "o": 11.47, "p": 15.93}},
+        {"id": "HT-4", "dc": 90.0, "energy": {"t": "tou", "f": 15.96, "o": 14.36, "p": 19.95}},
+        {"id": "EHT-1", "dc": 90.0, "energy": {"t": "tou", "f": 12.66, "o": 11.39, "p": 15.82}},
+        {"id": "EHT-2", "dc": 90.0, "energy": {"t": "tou", "f": 12.61, "o": 11.35, "p": 15.76}}
+      ]
+    },
+    {
+      "gazette_id": "2024-feb-ratail.pdf",
+      "gazette_date": "February 29, 2024",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/b1ba55797abd4878a9d04c5fb848454f.pdf",
+      "parameters": {
+        "prepaid_rebate_percentage": 0.005,
+        "late_payment_surcharge_percentage": 0.05,
+        "power_factor_minimum": 0.95,
+        "power_factor_surcharge_per_0_01_drop": 0.0075,
+        "ht_eht_minimum_dc_percentage": 0.80,
+        "excess_load_penalty_multiplier": 2,
+        "vat_percentage": 0.05,
+        "security_deposit_tk_per_kw_postpaid": {
+          "LT_upto_2kW": 480,
+          "LT_above_2kW": 720,
+          "Other_LT": 960,
+          "MT_HT_EHT": 1200
+        }
+      },
+      "rates": [
+        {"id": "LT-A", "dc": 42.0, "energy": {"t": "slab", "ll": 4.63, "s1": 5.26, "s2": 7.20, "s3": 7.59, "s4": 8.02, "s5": 12.67, "s6": 14.61}},
+        {"id": "LT-B", "dc": 42.0, "energy": {"t": "flat", "f": 5.25}},
+        {"id": "LT-C1", "dc": 48.0, "energy": {"t": "tou", "f": 10.76, "o": 9.68, "p": 12.95}},
+        {"id": "LT-C2", "dc": 120.0, "energy": {"t": "flat", "f": 15.15}},
+        {"id": "LT-D1", "dc": 60.0, "energy": {"t": "flat", "f": 7.55}},
+        {"id": "LT-D2", "dc": 90.0, "energy": {"t": "flat", "f": 9.71}},
+        {"id": "LT-D3", "dc": 90.0, "energy": {"t": "tou", "f": 9.62, "o": 8.66, "so": 7.68, "p": 12.14}},
+        {"id": "LT-E", "dc": 90.0, "energy": {"t": "tou", "f": 13.01, "o": 11.71, "p": 15.62}},
+        {"id": "LT-T", "dc": 120.0, "energy": {"t": "flat", "f": 20.17}},
+        {"id": "MT-1", "dc": 90.0, "energy": {"t": "tou", "f": 10.55, "o": 9.50, "p": 13.29}},
+        {"id": "MT-2", "dc": 90.0, "energy": {"t": "tou", "f": 11.63, "o": 10.48, "p": 14.57}},
+        {"id": "MT-3", "dc": 90.0, "energy": {"t": "tou", "f": 10.88, "o": 9.75, "p": 13.62}},
+        {"id": "MT-4", "dc": 120.0, "energy": {"t": "tou", "f": 14.38, "o": 12.99, "p": 18.06}},
+        {"id": "MT-5", "dc": 90.0, "energy": {"t": "tou", "f": 10.61, "o": 9.56, "p": 13.42}},
+        {"id": "MT-6", "dc": 120.0, "energy": {"t": "flat", "f": 19.02}},
+        {"id": "MT-7", "dc": 90.0, "energy": {"t": "tou", "f": 9.59, "o": 8.63, "so": 7.71, "p": 12.14}},
+        {"id": "MT-8", "dc": 90.0, "energy": {"t": "tou", "f": 6.42, "o": 5.77, "p": 8.06}},
+        {"id": "HT-1", "dc": 90.0, "energy": {"t": "tou", "f": 10.61, "o": 9.58, "p": 13.32}},
+        {"id": "HT-2", "dc": 90.0, "energy": {"t": "tou", "f": 11.39, "o": 10.26, "p": 14.40}},
+        {"id": "HT-3", "dc": 90.0, "energy": {"t": "tou", "f": 10.75, "o": 9.69, "p": 13.47}},
+        {"id": "HT-4", "dc": 90.0, "energy": {"t": "tou", "f": 13.37, "o": 12.10, "p": 16.89}},
+        {"id": "EHT-1", "dc": 90.0, "energy": {"t": "tou", "f": 10.66, "o": 9.61, "p": 13.45}},
+        {"id": "EHT-2", "dc": 90.0, "energy": {"t": "tou", "f": 10.61, "o": 9.54, "p": 13.33}}
+      ]
+    },
+    {
+      "gazette_id": "2023-mar-ratail.pdf",
+      "gazette_date": "February 28, 2023",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/d39f679eba42487186f3bdbaa22f0127.pdf",
+      "parameters": {
+        "prepaid_rebate_percentage": 0.01,
+        "late_payment_surcharge_percentage": 0.05,
+        "power_factor_minimum": 0.95,
+        "power_factor_surcharge_per_0_01_drop": 0.0075,
+        "ht_eht_minimum_dc_percentage": 0.70,
+        "excess_load_penalty_multiplier": 2,
+        "vat_percentage": 0.05,
+        "security_deposit_tk_per_kw_postpaid": {
+          "LT_upto_2kW": 400,
+          "LT_above_2kW": 600,
+          "Other_LT": 800,
+          "MT_HT_EHT": 1000
+        }
+      },
+      "rates": [
+        {"id": "LT-A", "dc": 35.0, "energy": {"t": "slab", "ll": 4.35, "s1": 4.85, "s2": 6.63, "s3": 6.95, "s4": 7.34, "s5": 11.51, "s6": 13.26}},
+        {"id": "LT-B", "dc": 35.0, "energy": {"t": "flat", "f": 4.82}},
+        {"id": "LT-C1", "dc": 35.0, "energy": {"t": "tou", "f": 9.88, "o": 8.88, "p": 11.85}},
+        {"id": "LT-C2", "dc": 100.0, "energy": {"t": "flat", "f": 13.89}},
+        {"id": "LT-D1", "dc": 60.0, "energy": {"t": "flat", "f": 6.97}},
+        {"id": "LT-D2", "dc": 90.0, "energy": {"t": "flat", "f": 8.91}},
+        {"id": "LT-D3", "dc": 90.0, "energy": {"t": "tou", "f": 8.84, "o": 7.96, "so": 7.08, "p": 11.06}},
+        {"id": "LT-E", "dc": 90.0, "energy": {"t": "tou", "f": 11.93, "o": 10.73, "p": 14.31}},
+        {"id": "LT-T", "dc": 100.0, "energy": {"t": "flat", "f": 18.52}},
+        {"id": "MT-1", "dc": 90.0, "energy": {"t": "tou", "f": 9.72, "o": 8.76, "p": 12.16}},
+        {"id": "MT-2", "dc": 90.0, "energy": {"t": "tou", "f": 10.55, "o": 9.50, "p": 13.20}},
+        {"id": "MT-3", "dc": 90.0, "energy": {"t": "tou", "f": 9.90, "o": 8.91, "p": 12.37}},
+        {"id": "MT-4", "dc": 100.0, "energy": {"t": "tou", "f": 13.26, "o": 11.94, "p": 16.59}},
+        {"id": "MT-5", "dc": 90.0, "energy": {"t": "tou", "f": 9.78, "o": 8.81, "p": 12.22}},
+        {"id": "MT-6", "dc": 100.0, "energy": {"t": "flat", "f": 17.37}},
+        {"id": "MT-7", "dc": 90.0, "energy": {"t": "tou", "f": 8.76, "o": 7.88, "so": 7.00, "p": 10.94}},
+        {"id": "MT-8", "dc": 90.0, "energy": {"t": "tou", "f": 5.79, "o": 5.22, "p": 7.23}},
+        {"id": "HT-1", "dc": 90.0, "energy": {"t": "tou", "f": 9.73, "o": 8.77, "p": 12.17}},
+        {"id": "HT-2", "dc": 90.0, "energy": {"t": "tou", "f": 10.44, "o": 9.41, "p": 13.05}},
+        {"id": "HT-3", "dc": 90.0, "energy": {"t": "tou", "f": 9.78, "o": 8.81, "p": 12.22}},
+        {"id": "HT-4", "dc": 90.0, "energy": {"t": "tou", "f": 12.27, "o": 11.05, "p": 15.34}},
+        {"id": "EHT-1", "dc": 90.0, "energy": {"t": "tou", "f": 9.68, "o": 8.72, "p": 12.10}},
+        {"id": "EHT-2", "dc": 90.0, "energy": {"t": "tou", "f": 9.63, "o": 8.65, "p": 12.03}}
+      ]
+    },
+    {
+      "gazette_id": "2023-feb-ratail.pdf",
+      "gazette_date": "January 30, 2023",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/9f2ee6efce624d6d914a71b38a1d9b94.pdf",
+      "parameters": {
+        "prepaid_rebate_percentage": 0.01,
+        "late_payment_surcharge_percentage": 0.05,
+        "power_factor_minimum": 0.95,
+        "power_factor_surcharge_per_0_01_drop": 0.0075,
+        "ht_eht_minimum_dc_percentage": 0.70,
+        "excess_load_penalty_multiplier": 2,
+        "vat_percentage": 0.05,
+        "security_deposit_tk_per_kw_postpaid": {
+          "LT_upto_2kW": 400,
+          "LT_above_2kW": 600,
+          "Other_LT": 800,
+          "MT_HT_EHT": 1000
+        }
+      },
+      "rates": [
+        {"id": "LT-A", "dc": 35.0, "energy": {"t": "slab", "ll": 4.14, "s1": 4.62, "s2": 6.31, "s3": 6.62, "s4": 6.99, "s5": 10.96, "s6": 12.63}},
+        {"id": "LT-B", "dc": 35.0, "energy": {"t": "flat", "f": 4.59}},
+        {"id": "LT-C1", "dc": 35.0, "energy": {"t": "tou", "f": 9.41, "o": 8.46, "p": 11.29}},
+        {"id": "LT-C2", "dc": 100.0, "energy": {"t": "flat", "f": 13.23}},
+        {"id": "LT-D1", "dc": 60.0, "energy": {"t": "flat", "f": 6.64}},
+        {"id": "LT-D2", "dc": 90.0, "energy": {"t": "flat", "f": 8.49}},
+        {"id": "LT-D3", "dc": 90.0, "energy": {"t": "tou", "f": 8.42, "o": 7.58, "so": 6.74, "p": 10.53}},
+        {"id": "LT-E", "dc": 90.0, "energy": {"t": "tou", "f": 11.36, "o": 10.22, "p": 13.63}},
+        {"id": "LT-T", "dc": 100.0, "energy": {"t": "flat", "f": 17.64}},
+        {"id": "MT-1", "dc": 90.0, "energy": {"t": "tou", "f": 9.26, "o": 8.34, "p": 11.58}},
+        {"id": "MT-2", "dc": 90.0, "energy": {"t": "tou", "f": 10.05, "o": 9.05, "p": 12.57}},
+        {"id": "MT-3", "dc": 90.0, "energy": {"t": "tou", "f": 9.43, "o": 8.49, "p": 11.78}},
+        {"id": "MT-4", "dc": 100.0, "energy": {"t": "tou", "f": 12.63, "o": 11.37, "p": 15.80}},
+        {"id": "MT-5", "dc": 90.0, "energy": {"t": "tou", "f": 9.31, "o": 8.39, "p": 11.64}},
+        {"id": "MT-6", "dc": 100.0, "energy": {"t": "flat", "f": 16.54}},
+        {"id": "MT-7", "dc": 90.0, "energy": {"t": "tou", "f": 8.34, "o": 7.50, "so": 6.67, "p": 10.42}},
+        {"id": "MT-8", "dc": 90.0, "energy": {"t": "tou", "f": 5.51, "o": 4.97, "p": 6.89}},
+        {"id": "HT-1", "dc": 90.0, "energy": {"t": "tou", "f": 9.27, "o": 8.35, "p": 11.59}},
+        {"id": "HT-2", "dc": 90.0, "energy": {"t": "tou", "f": 9.94, "o": 8.96, "p": 12.43}},
+        {"id": "HT-3", "dc": 90.0, "energy": {"t": "tou", "f": 9.31, "o": 8.39, "p": 11.64}},
+        {"id": "HT-4", "dc": 90.0, "energy": {"t": "tou", "f": 11.69, "o": 10.52, "p": 14.61}},
+        {"id": "EHT-1", "dc": 90.0, "energy": {"t": "tou", "f": 9.22, "o": 8.30, "p": 11.52}},
+        {"id": "EHT-2", "dc": 90.0, "energy": {"t": "tou", "f": 9.17, "o": 8.24, "p": 11.46}}
+      ]
+    },
+    {
+      "gazette_id": "2024-jan-ratail.pdf",
+      "gazette_date": "January 12, 2023",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/b6a4782fc8a34315a7b580c54e9e9a74.pdf",
+      "parameters": {
+        "prepaid_rebate_percentage": 0.01,
+        "late_payment_surcharge_percentage": 0.05,
+        "power_factor_minimum": 0.95,
+        "power_factor_surcharge_per_0_01_drop": 0.0075,
+        "ht_eht_minimum_dc_percentage": 0.70,
+        "excess_load_penalty_multiplier": 2,
+        "vat_percentage": 0.05,
+        "security_deposit_tk_per_kw_postpaid": {
+          "LT_upto_2kW": 400,
+          "LT_above_2kW": 600,
+          "Other_LT": 800,
+          "MT_HT_EHT": 1000
+        }
+      },
+      "rates": [
+        {"id": "LT-A", "dc": 35.0, "energy": {"t": "slab", "ll": 3.94, "s1": 4.40, "s2": 6.01, "s3": 6.30, "s4": 6.66, "s5": 10.44, "s6": 12.03}},
+        {"id": "LT-B", "dc": 35.0, "energy": {"t": "flat", "f": 4.37}},
+        {"id": "LT-C1", "dc": 35.0, "energy": {"t": "tou", "f": 8.96, "o": 8.06, "p": 10.75}},
+        {"id": "LT-C2", "dc": 100.0, "energy": {"t": "flat", "f": 12.60}},
+        {"id": "LT-D1", "dc": 60.0, "energy": {"t": "flat", "f": 6.32}},
+        {"id": "LT-D2", "dc": 90.0, "energy": {"t": "flat", "f": 8.09}},
+        {"id": "LT-D3", "dc": 90.0, "energy": {"t": "tou", "f": 8.02, "o": 7.22, "so": 6.42, "p": 10.03}},
+        {"id": "LT-E", "dc": 90.0, "energy": {"t": "tou", "f": 10.82, "o": 9.73, "p": 12.98}},
+        {"id": "LT-T", "dc": 100.0, "energy": {"t": "flat", "f": 16.80}},
+        {"id": "MT-1", "dc": 90.0, "energy": {"t": "tou", "f": 8.82, "o": 7.94, "p": 11.03}},
+        {"id": "MT-2", "dc": 90.0, "energy": {"t": "tou", "f": 9.58, "o": 8.62, "p": 11.97}},
+        {"id": "MT-3", "dc": 90.0, "energy": {"t": "tou", "f": 8.98, "o": 8.09, "p": 11.22}},
+        {"id": "MT-4", "dc": 100.0, "energy": {"t": "tou", "f": 12.03, "o": 10.83, "p": 15.05}},
+        {"id": "MT-5", "dc": 90.0, "energy": {"t": "tou", "f": 8.87, "o": 7.99, "p": 11.09}},
+        {"id": "MT-6", "dc": 100.0, "energy": {"t": "flat", "f": 15.75}},
+        {"id": "MT-7", "dc": 90.0, "energy": {"t": "tou", "f": 7.98, "o": 7.18, "so": 6.38, "p": 9.98}},
+        {"id": "MT-8", "dc": 90.0, "energy": {"t": "tou", "f": 5.24, "o": 4.72, "p": 6.55}},
+        {"id": "HT-1", "dc": 90.0, "energy": {"t": "tou", "f": 8.82, "o": 7.94, "p": 11.03}},
+        {"id": "HT-2", "dc": 90.0, "energy": {"t": "tou", "f": 9.46, "o": 8.51, "p": 11.83}},
+        {"id": "HT-3", "dc": 90.0, "energy": {"t": "tou", "f": 8.87, "o": 7.99, "p": 11.09}},
+        {"id": "HT-4", "dc": 90.0, "energy": {"t": "tou", "f": 11.14, "o": 10.03, "p": 13.93}},
+        {"id": "EHT-1", "dc": 90.0, "energy": {"t": "tou", "f": 8.78, "o": 7.90, "p": 10.98}},
+        {"id": "EHT-2", "dc": 90.0, "energy": {"t": "tou", "f": 8.73, "o": 7.86, "p": 10.91}}
+      ]
+    },
+    {
+      "gazette_id": "2020-mar-ratail.pdf",
+      "gazette_date": "March 2020",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/2c697ff9eae9416ea020d82b2258048b.pdf",
+      "parameters": {
+        "prepaid_rebate_percentage": 0.01,
+        "late_payment_surcharge_percentage": 0.05,
+        "power_factor_minimum": 0.95,
+        "power_factor_surcharge_per_0_01_drop": 0.0075,
+        "ht_eht_minimum_dc_percentage": 0.70,
+        "excess_load_penalty_multiplier": 2,
+        "vat_percentage": 0.05,
+        "security_deposit_tk_per_kw_postpaid": {
+          "LT_upto_2kW": 400,
+          "LT_above_2kW": 600,
+          "Other_LT": 800,
+          "MT_HT_EHT": 1000
+        }
+      },
+      "rates": [
+        {"id": "LT-A", "dc": 30.0, "energy": {"t": "slab", "ll": 3.75, "s1": 4.19, "s2": 5.72, "s3": 6.00, "s4": 6.34, "s5": 9.94, "s6": 11.46}},
+        {"id": "LT-B", "dc": 30.0, "energy": {"t": "flat", "f": 4.16}},
+        {"id": "LT-C1", "dc": 30.0, "energy": {"t": "tou", "f": 8.53, "o": 7.68, "p": 10.24}},
+        {"id": "LT-C2", "dc": 100.0, "energy": {"t": "flat", "f": 12.00}},
+        {"id": "LT-D1", "dc": 35.0, "energy": {"t": "flat", "f": 6.02}},
+        {"id": "LT-D2", "dc": 60.0, "energy": {"t": "flat", "f": 7.70}},
+        {"id": "LT-D3", "dc": 60.0, "energy": {"t": "tou", "f": 7.68, "o": 6.88, "so": 6.11, "p": 9.55}},
+        {"id": "LT-E", "dc": 60.0, "energy": {"t": "tou", "f": 10.30, "o": 9.27, "p": 12.36}},
+        {"id": "LT-T", "dc": 100.0, "energy": {"t": "flat", "f": 16.00}},
+        {"id": "MT-7", "dc": 60.0, "energy": {"t": "tou", "f": 7.56, "o": 6.80, "so": 6.05, "p": 9.45}},
+        {"id": "MT-8", "dc": 60.0, "energy": {"t": "tou", "f": 5.00, "o": 4.50, "p": 6.25}},
+        {"id": "HT-1", "dc": 60.0, "energy": {"t": "tou", "f": 8.41, "o": 7.57, "p": 10.51}},
+        {"id": "HT-2", "dc": 60.0, "energy": {"t": "tou", "f": 9.02, "o": 8.12, "p": 11.28}},
+        {"id": "HT-3", "dc": 60.0, "energy": {"t": "tou", "f": 8.45, "o": 7.61, "p": 10.56}},
+        {"id": "HT-4", "dc": 60.0, "energy": {"t": "tou", "f": 10.60, "o": 9.54, "p": 13.25}},
+        {"id": "EHT-1", "dc": 60.0, "energy": {"t": "tou", "f": 8.36, "o": 7.52, "p": 10.45}},
+        {"id": "EHT-2", "dc": 60.0, "energy": {"t": "tou", "f": 8.31, "o": 7.48, "p": 10.39}}
+      ]
+    },
+    {
+      "gazette_id": "2017-dec-retail.pdf",
+      "gazette_date": "December 2017",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/522e8b9ce4f241479e07849a8ab6d991.pdf",
+      "parameters": {
+        "prepaid_rebate_percentage": 0.0,
+        "late_payment_surcharge_percentage": 0.05,
+        "power_factor_minimum": 0.95,
+        "power_factor_surcharge_per_0_01_drop": 0.0075,
+        "ht_eht_minimum_dc_percentage": 0.70,
+        "excess_load_penalty_multiplier": 2,
+        "vat_percentage": 0.05,
+        "security_deposit_tk_per_kw_postpaid": {
+          "LT_upto_2kW": 400,
+          "LT_above_2kW": 600,
+          "Other_LT": 800,
+          "MT_HT_EHT": 1000
+        }
+      },
+      "rates": [
+        {"id": "LT-A", "dc": 25.0, "energy": {"t": "slab", "ll": 3.50, "s1": 4.00, "s2": 5.45, "s3": 5.70, "s4": 6.02, "s5": 9.30, "s6": 10.70}},
+        {"id": "LT-B", "dc": 15.0, "energy": {"t": "flat", "f": 4.00}},
+        {"id": "LT-C1", "dc": 25.0, "energy": {"t": "tou", "f": 8.20, "o": 7.38, "p": 9.84}},
+        {"id": "LT-C2", "dc": 80.0, "energy": {"t": "flat", "f": 12.00}},
+        {"id": "LT-D1", "dc": 25.0, "energy": {"t": "flat", "f": 5.73}},
+        {"id": "LT-D2", "dc": 40.0, "energy": {"t": "flat", "f": 7.70}},
+        {"id": "LT-E", "dc": 30.0, "energy": {"t": "tou", "f": 10.30, "o": 9.27, "p": 12.36}},
+        {"id": "LT-T", "dc": 100.0, "energy": {"t": "flat", "f": 16.00}},
+        {"id": "MT-1", "dc": 50.0, "energy": {"t": "tou", "f": 8.00, "o": 7.20, "p": 10.00}},
+        {"id": "MT-3", "dc": 50.0, "energy": {"t": "tou", "f": 8.15, "o": 7.34, "p": 10.19}},
+        {"id": "MT-4", "dc": 80.0, "energy": {"t": "tou", "f": 11.00, "o": 9.90, "p": 13.75}},
+        {"id": "MT-5", "dc": 50.0, "energy": {"t": "tou", "f": 8.05, "o": 7.25, "p": 10.06}},
+        {"id": "MT-6", "dc": 100.0, "energy": {"t": "flat", "f": 15.00}}
+      ]
+    },
+    {
+      "gazette_id": "2015-sept-retail.pdf",
+      "gazette_date": "September 2015",
+      "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/ee208d0d4e3c4e0dad2e2b67481d70f1.pdf",
+      "parameters": {
+        "prepaid_rebate_percentage": 0.0,
+        "late_payment_surcharge_percentage": 0.0,
+        "power_factor_minimum": 0,
+        "power_factor_surcharge_per_0_01_drop": 0,
+        "ht_eht_minimum_dc_percentage": 0.70,
+        "excess_load_penalty_multiplier": 0,
+        "vat_percentage": 0.05,
+        "security_deposit_tk_per_kw_postpaid": {
+          "LT_upto_2kW": 0,
+          "LT_above_2kW": 0,
+          "Other_LT": 0,
+          "MT_HT_EHT": 0
+        }
+      },
+      "rates": [
+        {"id": "LT-A", "dc": null, "energy": {"t": "slab", "ll": 3.33, "s1": 3.80, "s2": 5.14, "s3": 5.36, "s4": 5.63, "s5": 8.70, "s6": 9.98}},
+        {"id": "LT-B", "dc": null, "energy": {"t": "flat", "f": 3.82}},
+        {"id": "LT-C", "dc": null, "energy": {"t": "tou", "f": 7.66, "o": 6.90, "p": 9.24}},
+        {"id": "LT-D", "dc": null, "energy": {"t": "flat", "f": 5.22}},
+        {"id": "LT-E", "dc": null, "energy": {"t": "tou", "f": 9.80, "o": 8.45, "p": 11.98}},
+        {"id": "MT-General", "dc": null, "energy": {"t": "tou", "f": 7.57, "o": 6.88, "p": 9.57}},
+        {"id": "HT-General", "dc": null, "energy": {"t": "tou", "f": 7.49, "o": 6.82, "p": 9.52}},
+        {"id": "EHT-132kV", "dc": null, "energy": {"t": "tou", "f": 7.35, "o": 6.64, "p": 9.47}},
+        {"id": "EHT-230kV", "dc": null, "energy": {"t": "tou", "f": 7.25, "o": 6.66, "p": 9.40}}
+      ]
+    }
+  ]
+}
