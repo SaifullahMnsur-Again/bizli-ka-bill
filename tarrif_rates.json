@@ -1,8 +1,8 @@
 {
   "metadata": {
     "title": "Bangladesh Electricity Tariff Rates & Web-App Billing Engine",
-    "description": "Scalable JSON representation of electricity billing rules designed for static web applications. Formulae are written in valid JavaScript expressions for direct extraction and evaluation. Includes data sources and tension definitions.",
-    "source_repository": "https://bpdb.gov.bd/pages/static-pages/6922dee6933eb65569e1e3b7",
+    "description": "Scalable JSON representation of electricity billing rules designed for static web applications. Formulae are written in valid JavaScript expressions for direct extraction and evaluation. Includes data sources, tension definitions, and effective dates.",
+    "source_repository": "https://dpdc.gov.bd/pages/static-pages/6922de6f933eb65569e1a9c4",
     "tension_categories": {
       "LT": "Light Tension",
       "MT": "Medium Tension",
@@ -87,6 +87,7 @@
     {
       "gazette_id": "2026-june-retail.pdf",
       "gazette_date": "June 03, 2026",
+      "effective_from": "June 2026",
       "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2026/5/e37ed032-9fe9-4717-b84c-92d06c96bcde.pdf",
       "parameters": {
         "prepaid_rebate_percentage": 0.005,
@@ -132,6 +133,7 @@
     {
       "gazette_id": "2024-feb-ratail.pdf",
       "gazette_date": "February 29, 2024",
+      "effective_from": "February 2024",
       "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/b1ba55797abd4878a9d04c5fb848454f.pdf",
       "parameters": {
         "prepaid_rebate_percentage": 0.005,
@@ -177,6 +179,7 @@
     {
       "gazette_id": "2023-mar-ratail.pdf",
       "gazette_date": "February 28, 2023",
+      "effective_from": "March 2023",
       "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/d39f679eba42487186f3bdbaa22f0127.pdf",
       "parameters": {
         "prepaid_rebate_percentage": 0.01,
@@ -222,6 +225,7 @@
     {
       "gazette_id": "2023-feb-ratail.pdf",
       "gazette_date": "January 30, 2023",
+      "effective_from": "February 2023",
       "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/9f2ee6efce624d6d914a71b38a1d9b94.pdf",
       "parameters": {
         "prepaid_rebate_percentage": 0.01,
@@ -267,6 +271,7 @@
     {
       "gazette_id": "2024-jan-ratail.pdf",
       "gazette_date": "January 12, 2023",
+      "effective_from": "January 2023",
       "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/b6a4782fc8a34315a7b580c54e9e9a74.pdf",
       "parameters": {
         "prepaid_rebate_percentage": 0.01,
@@ -312,6 +317,7 @@
     {
       "gazette_id": "2020-mar-ratail.pdf",
       "gazette_date": "March 2020",
+      "effective_from": "March 2020",
       "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/2c697ff9eae9416ea020d82b2258048b.pdf",
       "parameters": {
         "prepaid_rebate_percentage": 0.01,
@@ -351,6 +357,7 @@
     {
       "gazette_id": "2017-dec-retail.pdf",
       "gazette_date": "December 2017",
+      "effective_from": "December 2017",
       "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/522e8b9ce4f241479e07849a8ab6d991.pdf",
       "parameters": {
         "prepaid_rebate_percentage": 0.0,
@@ -386,6 +393,7 @@
     {
       "gazette_id": "2015-sept-retail.pdf",
       "gazette_date": "September 2015",
+      "effective_from": "September 2015",
       "source_url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bpdb/2024/12/ee208d0d4e3c4e0dad2e2b67481d70f1.pdf",
       "parameters": {
         "prepaid_rebate_percentage": 0.0,
