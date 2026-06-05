@@ -4,11 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bizli Kaa Bill</title>
+    <title>Bizli Ka Bill</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Translations data and helpers -->
+    <script src="translations.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
@@ -62,6 +64,8 @@
             opacity: 1;
         }
 
+
+
     </style>
 </head>
 
@@ -70,12 +74,12 @@
     <!-- Loading Overlay -->
     <div id="loading-overlay"
         class="fixed inset-0 bg-slate-50 z-50 flex flex-col items-center justify-center transition-opacity duration-500">
-        <div class="p-5 bg-indigo-600 rounded-2xl text-white shadow-xl shadow-indigo-600/30 animate-pulse mb-6">
+        <div class="p-5 bg-gradient-to-br from-amber-500 via-orange-600 to-indigo-600 rounded-2xl text-white shadow-2xl shadow-orange-500/30 mb-6">
             <i data-lucide="zap" class="w-12 h-12"></i>
         </div>
-        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight mb-2">Bizli Kaa Bill</h2>
+        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight mb-2">Bizli Ka Bill</h2>
         <p class="text-slate-500 font-medium text-sm flex items-center gap-2">
-            <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-indigo-600"></i> Fetching Tariff Data Engine...
+            <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-orange-500"></i> Fetching Tariff Data Engine...
         </p>
     </div>
 
@@ -83,17 +87,26 @@
     <div id="main-content" class="opacity-0 transition-opacity duration-500">
         <!-- Header -->
         <div class="max-w-6xl mx-auto mb-8">
-            <div class="flex items-start gap-4 mb-2">
-                <div class="p-3 bg-gradient-to-br from-amber-500 via-orange-600 to-indigo-600 rounded-xl text-white shadow-lg shadow-orange-500/20 shrink-0 mt-1">
-                    <i data-lucide="zap" class="w-8 h-8"></i>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-2">
+                <div class="flex items-start gap-4">
+                    <div class="p-3 bg-gradient-to-br from-amber-500 via-orange-600 to-indigo-600 rounded-xl text-white shadow-lg shadow-orange-500/20 shrink-0 mt-1 transition-all duration-300 hover:rotate-12 hover:scale-110">
+                        <i data-lucide="zap" class="w-8 h-8"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-indigo-950 to-orange-600 bg-clip-text text-transparent">Bizli Ka Bill</h1>
+                        <p class="text-orange-500 font-bold italic mb-1" data-translate="title_quote">"bizli ka bill kaun bharega?"</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-indigo-950 to-orange-600 bg-clip-text text-transparent">Bizli Kaa Bill</h1>
-                    <p class="text-orange-500 font-bold italic mb-1">"bizli ka bill kaun bharega?"</p>
-                    <p class="text-slate-500 font-medium text-sm md:text-base max-w-2xl mt-2">
-                        Electricity bill calculator and comparator based on tariffs from 2015 to 2026. Supports all LT,
-                        MT, HT, and EHT consumer categories.
-                    </p>
+                <!-- Premium Language Switcher -->
+                <div class="flex bg-slate-100 rounded-lg p-1 border border-slate-200 shadow-sm shrink-0">
+                    <button id="btn-lang-en" class="px-3 py-1.5 rounded-md text-xs font-bold transition-all bg-white shadow text-slate-800 focus:outline-none">EN</button>
+                    <button id="btn-lang-bn" class="px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-800 focus:outline-none">বাংলা</button>
+                </div>
+            </div>
+            <p class="text-slate-500 font-medium text-sm md:text-base max-w-2xl mt-2" data-translate="description">
+                Electricity bill calculator and comparator based on tariffs from 2015 to 2026. Supports all LT,
+                MT, HT, and EHT consumer categories.
+            </p>
                     <!-- <a id="link-sourceRepo" href="#" target="_blank" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 text-sm font-bold mt-3 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100 transition-colors">
                         <i data-lucide="external-link" class="w-4 h-4"></i> BPDB Source Repository
                     </a> -->
@@ -108,27 +121,27 @@
             <div class="lg:col-span-5 space-y-6">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                     <h2 class="text-lg font-semibold flex items-center gap-2 mb-6 border-b border-slate-100 pb-3">
-                        <i data-lucide="settings-2" class="w-5 h-5 text-orange-500"></i> Primary Configuration
+                        <i data-lucide="settings-2" class="w-5 h-5 text-orange-500"></i> <span data-translate="primary_config">Primary Configuration</span>
                     </h2>
 
                     <div class="space-y-5">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="col-span-1 md:col-span-2">
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Customer Category</label>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1" data-translate="cust_category">Customer Category</label>
                                 <select id="select-category"
                                     class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium text-slate-800 cursor-pointer"></select>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Tariff Schedule</label>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1" data-translate="tariff_schedule">Tariff Schedule</label>
                                 <select id="select-gazette"
                                     class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-800 cursor-pointer"></select>
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Meter Type</label>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1" data-translate="meter_type">Meter Type</label>
                                 <div class="flex bg-slate-100 rounded-lg p-1">
-                                    <button id="btn-prepaid"
+                                    <button id="btn-prepaid" data-translate="prepaid"
                                         class="flex-1 text-sm py-1.5 rounded-md font-bold transition-all bg-indigo-600 text-white shadow shadow-indigo-600/20">Prepaid</button>
-                                    <button id="btn-postpaid"
+                                    <button id="btn-postpaid" data-translate="postpaid"
                                         class="flex-1 text-sm py-1.5 rounded-md font-medium transition-all text-slate-500 hover:text-slate-700 hover:bg-slate-50">Postpaid</button>
                                 </div>
                             </div>
@@ -138,7 +151,7 @@
 
                         <div>
                             <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                                <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i> Energy Consumption
+                                <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i> <span data-translate="energy_consumption">Energy Consumption</span>
                             </h3>
                             <div id="energy-inputs-container"></div>
                         </div>
@@ -147,7 +160,7 @@
 
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-1">Approved Load
+                                <label class="block text-sm font-semibold text-slate-700 mb-1" data-translate="approved_load">Approved Load
                                     (kW)</label>
                                 <input type="text" inputmode="decimal" id="input-approvedLoad"
                                     class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-lg" />
@@ -158,8 +171,8 @@
                                 <input type="checkbox" id="check-latePayment"
                                     class="mt-1 w-4 h-4 text-orange-600 rounded cursor-pointer" />
                                 <label for="check-latePayment" class="text-sm text-orange-800 cursor-pointer">
-                                    <span class="font-semibold block">Bill Paid After Due Date?</span>
-                                    Postpaid bills incur a <span id="label-late-pct">5%</span> late payment surcharge.
+                                    <span class="font-semibold block" data-translate="bill_paid_after_due">Bill Paid After Due Date?</span>
+                                    <span data-translate="late_payment_msg">Postpaid bills incur a 5% late payment surcharge.</span>
                                 </label>
                             </div>
 
@@ -171,11 +184,12 @@
                                         <div class="group relative">
                                             <label for="check-overrideActual"
                                                 class="text-sm font-semibold text-slate-700 flex items-center gap-2 cursor-pointer w-max">
-                                                Override Actual Demand
+                                                <span data-translate="override_demand">Override Actual Demand</span>
                                                 <i data-lucide="info" class="w-4 h-4 text-slate-400"></i>
                                             </label>
                                             <div
-                                                class="tooltip-content absolute bottom-full mb-2 left-0 w-64 p-2 bg-slate-800 text-white text-xs rounded shadow-lg z-50">
+                                                class="tooltip-content absolute bottom-full mb-2 left-0 w-64 p-2 bg-slate-800 text-white text-xs rounded shadow-lg z-50"
+                                                data-translate="tooltip_excess_demand">
                                                 Excess kW is penalized at 2x the standard Demand Charge rate.
                                             </div>
                                         </div>
@@ -191,11 +205,12 @@
                                         <div class="group relative">
                                             <label for="check-overridePf"
                                                 class="text-sm font-semibold text-slate-700 flex items-center gap-2 cursor-pointer w-max">
-                                                Override Power Factor
+                                                <span data-translate="override_pf">Override Power Factor</span>
                                                 <i data-lucide="info" class="w-4 h-4 text-slate-400"></i>
                                             </label>
                                             <div
-                                                class="tooltip-content absolute bottom-full mb-2 left-0 w-64 p-2 bg-slate-800 text-white text-xs rounded shadow-lg z-50">
+                                                class="tooltip-content absolute bottom-full mb-2 left-0 w-64 p-2 bg-slate-800 text-white text-xs rounded shadow-lg z-50"
+                                                data-translate="tooltip_pf">
                                                 Applies to all MT/HT/EHT, and LT customers &gt;20kW. Drops below minimum
                                                 incur severe surcharges.
                                             </div>
@@ -209,9 +224,8 @@
                                     class="hidden text-xs text-rose-700 bg-rose-50 p-2.5 rounded-lg border border-rose-200 flex gap-2 items-start shadow-sm mt-2">
                                     <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 mt-0.5"></i>
                                     <div>
-                                        <span class="font-bold block">PF Surcharge Triggered</span>
-                                        Your PF is below standard. A strict penalty will be applied to your base Energy
-                                        Charge.
+                                        <span class="font-bold block" data-translate="pf_surcharge_title">PF Surcharge Triggered</span>
+                                        <span data-translate="pf_surcharge_body">Your PF is below standard. A strict penalty will be applied to your base Energy Charge.</span>
                                     </div>
                                 </div>
                             </div>
@@ -219,7 +233,7 @@
                             <div class="pt-4 border-t border-slate-100">
                                 <button id="btn-calculate"
                                     class="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 px-4 rounded-xl shadow-md shadow-violet-600/10 hover:shadow-violet-600/20 transition-all flex items-center justify-center gap-2">
-                                    <i data-lucide="calculator" class="w-5 h-5"></i> Calculate Bill
+                                    <i data-lucide="calculator" class="w-5 h-5"></i> <span data-translate="calculate_bill">Calculate Bill</span>
                                 </button>
                             </div>
                         </div>
@@ -239,7 +253,7 @@
                     <div class="flex justify-between items-start mb-6 relative z-10 flex-wrap gap-4">
                         <div>
                             <h2 class="text-sm sm:text-base font-medium text-indigo-200 flex items-center gap-1.5">
-                                <i data-lucide="receipt" class="w-4 h-4 text-orange-500"></i> Estimated Total Bill
+                                <i data-lucide="receipt" class="w-4 h-4 text-orange-500"></i> <span data-translate="estimated_bill">Estimated Total Bill</span>
                             </h2>
                             <div
                                 class="text-3xl sm:text-4xl md:text-5xl font-bold mt-1 tracking-tight flex items-baseline flex-wrap">
@@ -292,7 +306,7 @@
                             <div class="flex justify-between items-center border-b border-white/10 pb-2 mb-2">
                                 <h3
                                     class="text-sm font-bold text-indigo-200 uppercase tracking-wider flex items-center gap-2">
-                                    <i data-lucide="list-checks" class="w-4 h-4"></i> Itemized Breakdown
+                                    <i data-lucide="list-checks" class="w-4 h-4"></i> <span data-translate="itemized_breakdown">Itemized Breakdown</span>
                                 </h3>
                                 <a id="display-gazetteName" href="#" target="_blank"
                                     class="text-xs text-indigo-400 hover:text-indigo-300 underline font-normal transition-colors flex items-center gap-0.5">
@@ -305,7 +319,7 @@
                                     <div class="flex justify-between items-center text-sm">
                                         <div class="flex items-center gap-2">
                                             <div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
-                                            <span class="text-slate-200 font-medium" id="label-ec">Energy Charge</span>
+                                            <span class="text-slate-200 font-medium" id="label-ec" data-translate="energy_charge">Energy Charge</span>
                                         </div>
                                         <span class="font-mono text-white font-semibold" id="val-ec">৳0</span>
                                     </div>
@@ -319,7 +333,7 @@
                                     <div class="flex items-center gap-2">
                                         <div class="w-2.5 h-2.5 rounded-full bg-orange-500"></div>
                                         <div class="flex flex-col">
-                                            <span class="text-slate-200">Demand Charge</span>
+                                            <span class="text-slate-200" data-translate="demand_charge">Demand Charge</span>
                                             <span class="text-[10px] text-indigo-300/70" id="label-dc-desc">-</span>
                                         </div>
                                     </div>
@@ -331,7 +345,7 @@
 
                                 <div id="container-rebate"
                                     class="flex justify-between items-center text-sm text-emerald-400 bg-emerald-950/30 -mx-2 px-2 py-1 rounded hidden">
-                                    <span class="font-semibold" id="label-rebate">Prepaid Rebate</span>
+                                    <span class="font-semibold" id="label-rebate" data-translate="prepaid_rebate">Prepaid Rebate</span>
                                     <span class="font-mono font-bold" id="val-rebate">-৳0</span>
                                 </div>
 
@@ -340,14 +354,14 @@
                                 </div>
 
                                 <div class="flex justify-between items-center text-sm">
-                                    <span class="text-slate-300 font-medium">Net Bill (Before VAT)</span>
+                                    <span class="text-slate-300 font-medium" data-translate="net_bill">Net Bill (Before VAT)</span>
                                     <span class="font-mono font-semibold" id="val-netBill">৳0</span>
                                 </div>
 
                                 <div class="flex justify-between items-center text-sm">
                                     <div class="flex items-center gap-2">
                                         <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                                        <span class="text-slate-300" id="label-vat">Govt. VAT</span>
+                                        <span class="text-slate-300" id="label-vat" data-translate="govt_vat">Govt. VAT</span>
                                     </div>
                                     <span class="font-mono" id="val-vat">৳0</span>
                                 </div>
@@ -363,8 +377,7 @@
                                 </div>
 
                                 <div class="flex justify-between items-center text-sm">
-                                    <span class="text-indigo-200 font-bold uppercase tracking-wider">Total
-                                        Payable</span>
+                                    <span class="text-indigo-200 font-bold uppercase tracking-wider" data-translate="total_payable">Total Payable</span>
                                     <span class="font-mono font-bold text-lg text-indigo-300"
                                         id="val-totalPayable">৳0</span>
                                 </div>
@@ -376,17 +389,16 @@
                     <div
                         class="mt-4 p-3 bg-indigo-950/40 rounded-xl border border-indigo-500/10 text-[11px] text-indigo-200/60 leading-relaxed z-10 relative">
                         <span class="font-bold text-indigo-300 block mb-0.5 flex items-center gap-1">
-                            <i data-lucide="info" class="w-3.5 h-3.5 text-orange-400"></i> Disclaimer
+                            <i data-lucide="info" class="w-3.5 h-3.5 text-orange-400"></i> <span data-translate="disclaimer_title">Disclaimer</span>
                         </span>
-                        Calculations are estimates based on official gazettes and may contain errors. Please verify with
-                        the sources linked above and below.
+                        <span data-translate="disclaimer_body">Calculations are estimates based on official gazettes and may contain errors. Please verify with the sources linked above and below.</span>
                     </div>
 
                     <div
                         class="mt-3 text-[11px] text-indigo-200/50 text-center flex items-center justify-center gap-1 z-10 relative">
                         <i data-lucide="external-link" class="w-3.5 h-3.5 text-orange-400/70"></i>
                         <a id="link-bottomSource" href="#" target="_blank"
-                            class="hover:text-orange-400 transition-colors">BPDB Source Repository</a>
+                            class="hover:text-orange-400 transition-colors" data-translate="bpdb_source">BPDB Source Repository</a>
                     </div>
                 </div>
             </div>
@@ -398,16 +410,16 @@
                 class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 border-b border-slate-100 pb-4">
                 <h2 class="text-xl font-bold flex items-center gap-2 text-slate-800">
                     <i data-lucide="trending-up" class="w-5 h-5 text-orange-500"></i>
-                    Historical Bill Trend
+                    <span data-translate="historical_trend">Historical Bill Trend</span>
                 </h2>
 
                 <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
-                    <span class="text-xs font-semibold text-slate-500 px-2 uppercase tracking-wider">Compare Vs</span>
+                    <span class="text-xs font-semibold text-slate-500 px-2 uppercase tracking-wider" data-translate="compare_vs">Compare Vs</span>
                     <select id="select-trendBase"
                         class="text-sm bg-white border border-slate-300 rounded-md px-2 py-1 outline-none text-slate-700 font-medium cursor-pointer">
-                        <option value="previous">Previous Tariff</option>
-                        <option value="first">First Tariff</option>
-                        <option value="last">Latest Tariff</option>
+                        <option value="previous" data-translate="opt_prev">Previous Tariff</option>
+                        <option value="first" data-translate="opt_first">First Tariff</option>
+                        <option value="last" data-translate="opt_last">Latest Tariff</option>
                         <option value="specific">Specific Tariff...</option>
                     </select>
                     <select id="select-trendSpecific"
@@ -426,6 +438,7 @@
         let TARIFF_JSON = null;
 
         let state = {
+            lang: 'en',
             selectedCategoryId: 'LT-A',
             selectedGazetteId: null, // Populated after fetch
             meterType: 'prepaid',
@@ -465,13 +478,15 @@
                 patternIdx++;
             }
             const formatted = result.join(',');
-            return val < 0 ? `-${formatted}` : formatted;
+            const output = val < 0 ? `-${formatted}` : formatted;
+            return state.lang === 'bn' ? translateText(output, 'bn') : output;
         };
         const formatCurrency = (val) => {
-            if (val < 0) return `-৳${formatCustomNumber(Math.abs(val))}`;
-            return `৳${formatCustomNumber(val)}`;
+            const symbol = '৳';
+            if (val < 0) return `-${symbol}${formatCustomNumber(Math.abs(val))}`;
+            return `${symbol}${formatCustomNumber(val)}`;
         };
-        const formatNumber = (val) => Number(val).toFixed(2);
+
 
         const sanitizeInteger = (valStr) => {
             return valStr.replace(/[^0-9]/g, '');
@@ -592,7 +607,7 @@
 
             const createInput = (label, key, val, colorClass, textClass) => `
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 whitespace-nowrap">${label}</label>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 whitespace-nowrap">${translateText(label, state.lang)}</label>
                     <input type="text" inputmode="numeric" value="${val}" 
                            oninput="updateUsageState(this, '${key}')" 
                            class="w-full ${colorClass} border rounded-lg px-3 py-2.5 focus:ring-2 focus:outline-none font-mono text-base ${textClass}" />
@@ -648,13 +663,18 @@
             else {
                 totalU = state.usageFlat + state.usagePeak + state.usageOffPeak + (cat.hasSO ? state.usageSuperOffPeak : 0);
                 const touLabel = document.getElementById('label-total-tou');
-                if (touLabel) touLabel.innerText = `Total: ${totalU} kWh`;
+                if (touLabel) {
+                    const labelEn = `Total: ${totalU} kWh`;
+                    const labelBn = `মোট ব্যবহার: ${translateText(totalU, 'bn')} কিলোওয়াট-ঘণ্টা`;
+                    touLabel.innerText = state.lang === 'bn' ? labelBn : labelEn;
+                }
             }
 
             document.getElementById('display-grandTotal').innerText = formatCustomNumber(res.total);
 
             const gazetteNameEl = document.getElementById('display-gazetteName');
-            gazetteNameEl.innerHTML = `Source <i data-lucide="external-link" class="w-3 h-3"></i>`;
+            const sourceText = state.lang === 'bn' ? 'উৎস' : 'Source';
+            gazetteNameEl.innerHTML = `${sourceText} <i data-lucide="external-link" class="w-3 h-3"></i>`;
             gazetteNameEl.title = `Gazette Date: ${res.gazette.gazette_date}`;
             if (res.gazette.source_url) {
                 gazetteNameEl.href = res.gazette.source_url;
@@ -665,29 +685,52 @@
             }
             lucide.createIcons({ root: gazetteNameEl });
 
-            const meterTypeFormatted = state.meterType.charAt(0).toUpperCase() + state.meterType.slice(1);
+            const meterTypeFormatted = state.lang === 'bn' 
+                ? (state.meterType === 'prepaid' ? 'প্রিপেইড' : 'পোস্টপেইড') 
+                : (state.meterType.charAt(0).toUpperCase() + state.meterType.slice(1));
             document.getElementById('display-meterCategory').innerText = `${meterTypeFormatted} - ${cat.id}`;
 
-            document.getElementById('label-ec').innerText = `Energy Charge (${totalU} units)`;
+            const ecLabelEn = `Energy Charge (${totalU} units)`;
+            const ecLabelBn = `বিদ্যুৎ বিল (${translateText(totalU, 'bn')} ইউনিট)`;
+            document.getElementById('label-ec').innerText = state.lang === 'bn' ? ecLabelBn : ecLabelEn;
             document.getElementById('val-ec').innerText = formatCurrency(res.ec);
 
             document.getElementById('container-slabs').innerHTML = res.slabDetails.map((slab, idx) => {
                 const color = getSlabColor(idx, res.slabDetails.length);
-                return `<div class="flex justify-between text-[11px] text-slate-300 items-center"><div class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background-color: ${color};"></div><span>${slab.name} (${slab.units} kWh @ ৳${formatNumber(slab.rate)}/kWh)</span></div><span class="font-mono">${formatCurrency(slab.amount)}</span></div>`;
+                const nameBn = translateText(slab.name, state.lang);
+                const unitsBn = translateText(slab.units, state.lang);
+                const rateBn = formatNumber(slab.rate, state.lang);
+                const amountBn = formatCurrency(slab.amount);
+                const textEn = `${slab.name} (${slab.units} kWh @ ৳${formatNumber(slab.rate)}/kWh)`;
+                const textBn = `${nameBn} (${unitsBn} কিলোওয়াট-ঘণ্টা @ ৳${rateBn}/কিলোওয়াট-ঘণ্টা)`;
+                const textToUse = state.lang === 'bn' ? textBn : textEn;
+                return `<div class="flex justify-between text-[11px] text-slate-300 items-center"><div class="flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background-color: ${color};"></div><span>${textToUse}</span></div><span class="font-mono">${amountBn}</span></div>`;
             }).join('');
 
-            document.getElementById('label-dc-desc').innerText = res.dcRuleDesc;
+            document.getElementById('label-dc-desc').innerText = translateText(res.dcRuleDesc, state.lang);
             document.getElementById('val-dc').innerText = formatCurrency(res.dc);
 
             const penContainer = document.getElementById('container-penalties');
             let penHtml = '';
             if (res.penalty > 0) {
                 const actLoad = state.isActualEditable ? state.actualLoad : state.approvedLoad;
-                penHtml += `<div class="flex justify-between items-center text-sm text-rose-300 bg-rose-950/30 -mx-2 px-2 py-1 rounded"><div class="flex flex-col"><span class="font-semibold">Excess Load Penalty</span><span class="text-[10px]">${(actLoad - state.approvedLoad).toFixed(2)} kW @ 2x Rate</span></div><span class="font-mono font-bold">+${formatCurrency(res.penalty)}</span></div>`;
+                const excessVal = (actLoad - state.approvedLoad).toFixed(2);
+                const textEn = `Excess Load Penalty`;
+                const descEn = `${excessVal} kW @ 2x Rate`;
+                const textBn = `অতিরিক্ত লোড জরিমানা`;
+                const descBn = `${translateText(excessVal, 'bn')} কিলোওয়াট @ ২x হার`;
+                const labelTitle = state.lang === 'bn' ? textBn : textEn;
+                const labelDesc = state.lang === 'bn' ? descBn : descEn;
+                
+                penHtml += `<div class="flex justify-between items-center text-sm text-rose-300 bg-rose-950/30 -mx-2 px-2 py-1 rounded"><div class="flex flex-col"><span class="font-semibold">${labelTitle}</span><span class="text-[10px]">${labelDesc}</span></div><span class="font-mono font-bold">+${formatCurrency(res.penalty)}</span></div>`;
             }
             if (res.pfSurcharge > 0) {
                 const activePf = state.isPfEditable ? state.pf : 1.0;
-                penHtml += `<div class="flex justify-between items-center text-sm text-rose-300 bg-rose-950/30 -mx-2 px-2 py-1 rounded"><span class="font-semibold">Power Factor Penalty (PF: ${activePf})</span><span class="font-mono font-bold">+${formatCurrency(res.pfSurcharge)}</span></div>`;
+                const activePfBn = translateText(activePf.toFixed(2), 'bn');
+                const labelEn = `Power Factor Penalty (PF: ${activePf.toFixed(2)})`;
+                const labelBn = `পাওয়ার ফ্যাক্টর জরিমানা (পিএফ: ${activePfBn})`;
+                const labelToUse = state.lang === 'bn' ? labelBn : labelEn;
+                penHtml += `<div class="flex justify-between items-center text-sm text-rose-300 bg-rose-950/30 -mx-2 px-2 py-1 rounded"><span class="font-semibold">${labelToUse}</span><span class="font-mono font-bold">+${formatCurrency(res.pfSurcharge)}</span></div>`;
             }
             penContainer.innerHTML = penHtml;
             penContainer.style.display = penHtml ? 'block' : 'none';
@@ -695,17 +738,31 @@
             const rebateC = document.getElementById('container-rebate');
             if (res.rebate > 0) {
                 rebateC.style.display = 'flex';
-                document.getElementById('label-rebate').innerText = `Prepaid Rebate (${(res.params.prepaid_rebate_percentage * 100).toFixed(1)}%)`;
+                const rebatePct = (res.params.prepaid_rebate_percentage * 100).toFixed(1);
+                const rebatePctBn = translateText(rebatePct, 'bn');
+                const labelEn = `Prepaid Rebate (${rebatePct}%)`;
+                const labelBn = `প্রিপেইড রেয়াত (${rebatePctBn}%)`;
+                document.getElementById('label-rebate').innerText = state.lang === 'bn' ? labelBn : labelEn;
                 document.getElementById('val-rebate').innerText = `-${formatCurrency(res.rebate)}`;
             } else rebateC.style.display = 'none';
 
             document.getElementById('val-netBill').innerText = formatCurrency(res.netBill);
-            document.getElementById('label-vat').innerText = `Govt. VAT (${(res.params.vat_percentage * 100).toFixed(0)}%)`;
+            const vatPct = (res.params.vat_percentage * 100).toFixed(0);
+            const vatPctBn = translateText(vatPct, 'bn');
+            const vatLabelEn = `Govt. VAT (${vatPct}%)`;
+            const vatLabelBn = `সরকারি ভ্যাট (${vatPctBn}%)`;
+            document.getElementById('label-vat').innerText = state.lang === 'bn' ? vatLabelBn : vatLabelEn;
             document.getElementById('val-vat').innerText = `+${formatCurrency(res.vat)}`;
 
             const lateFeeC = document.getElementById('container-lateFee');
             if (res.lateFee > 0) {
                 lateFeeC.style.display = 'flex';
+                const latePaymentLabel = state.lang === 'bn' ? 'বিলম্ব পরিশোধ সারচার্জ' : 'Late Payment Surcharge';
+                const labelEl = document.getElementById('label-lateFee') || lateFeeC.querySelector('span:first-child');
+                if (labelEl) {
+                    labelEl.id = 'label-lateFee';
+                    labelEl.innerText = latePaymentLabel;
+                }
                 document.getElementById('val-lateFee').innerText = `+${formatCurrency(res.lateFee)}`;
             } else lateFeeC.style.display = 'none';
 
@@ -729,7 +786,7 @@
                 el.onmouseover = (e) => {
                     tooltip.style.opacity = '1';
                     ttLabel.innerText = label;
-                    ttPct.innerText = `${height.toFixed(1)}%`;
+                    ttPct.innerText = `${translateText(height.toFixed(1), state.lang)}%`;
                     ttVal.innerText = formatCurrency(val);
                     const rect = el.getBoundingClientRect();
                     const containerRect = el.parentElement.getBoundingClientRect();
@@ -750,8 +807,8 @@
                     ecHtml += `
                         <div class="w-full hover:brightness-110 transition-all cursor-pointer bar-sub-ec"
                              style="height: ${(slab.amount / res.ec) * 100}%; background-color: ${color};"
-                             data-label="${slab.name}"
-                             data-pct="${((slab.amount / res.total) * 100).toFixed(1)}%"
+                             data-label="${translateText(slab.name, state.lang)}"
+                             data-pct="${translateText(((slab.amount / res.total) * 100).toFixed(1), state.lang)}%"
                              data-val="${formatCurrency(slab.amount)}">
                         </div>
                     `;
@@ -779,9 +836,9 @@
                 ecContainer.innerHTML = '';
             }
 
-            bindTooltip('bar-segment-dc', pctDc, 'Demand Charge', res.dc);
-            bindTooltip('bar-segment-penalty', pctPenalty, 'Penalties & Fees', res.penalty + res.pfSurcharge + res.lateFee);
-            bindTooltip('bar-segment-vat', pctVat, 'Govt. VAT', res.vat);
+            bindTooltip('bar-segment-dc', pctDc, translateText('Demand Charge', state.lang), res.dc);
+            bindTooltip('bar-segment-penalty', pctPenalty, translateText('Penalties & Fees', state.lang), res.penalty + res.pfSurcharge + res.lateFee);
+            bindTooltip('bar-segment-vat', pctVat, translateText('Govt. VAT', state.lang), res.vat);
 
             if (res.isPfApplicable && state.isPfEditable && state.pf < 0.95) document.getElementById('warning-pf').style.display = 'flex';
             else document.getElementById('warning-pf').style.display = 'none';
@@ -881,12 +938,16 @@
 
                 const diffVal = baseTotal > 0 ? p.r.total - baseTotal : 0;
                 const pctChange = baseTotal > 0 ? (diffVal / baseTotal) * 100 : null;
-                const displayDate = p.r.gazette.effective_from || p.r.gazette.gazette_date;
-                const diffText = pctChange === null ? '' : `${diffVal > 0 ? '+' : ''}৳${formatCustomNumber(Math.abs(diffVal))} (${diffVal > 0 ? '+' : ''}${pctChange.toFixed(1)}%)`;
+                const displayDateRaw = p.r.gazette.effective_from || p.r.gazette.gazette_date;
+                const displayDate = translateText(displayDateRaw, state.lang);
+                
+                const pctChangeText = pctChange === null ? '' : translateText(pctChange.toFixed(1), state.lang);
+                const diffValText = formatCustomNumber(Math.abs(diffVal));
+                const diffText = pctChange === null ? '' : `${diffVal > 0 ? '+' : ''}৳${diffValText} (${diffVal > 0 ? '+' : ''}${pctChangeText}%)`;
                 const diffColor = pctChange === null ? '#64748b' : pctChange > 0 ? '#dc2626' : pctChange < 0 ? '#16a34a' : '#64748b';
                 const badgeValue = `৳${formatCustomNumber(p.r.total)}`;
                 const badgeText = pctChange === null ? badgeValue : `${badgeValue} ${diffText}`;
-                const badgeWidth = Math.max(76, Math.min(156, 18 + badgeText.length * 5.8));
+                const badgeWidth = Math.max(76, Math.min(186, 18 + badgeText.length * 5.8));
                 const badgeHeight = pctChange === null ? 30 : 40;
                 let isAbove = true;
                 let badgeY = p.y - (isCurrent ? 72 : 64);
@@ -927,6 +988,61 @@
             chartContainer.innerHTML = svgHtml;
         };
 
+        // --- 5. TRANSLATION & LANGUAGE HELPERS ---
+        const populateDropdowns = () => {
+            if (!TARIFF_JSON) return;
+            const catSel = document.getElementById('select-category');
+            catSel.innerHTML = TARIFF_JSON.customer_categories.map(c => {
+                const label = `${c.id} - ${c.name} [${c.tension}]`;
+                return `<option value="${c.id}">${translateText(label, state.lang)}</option>`;
+            }).join('');
+            catSel.value = state.selectedCategoryId;
+
+            const gazSel = document.getElementById('select-gazette');
+            gazSel.innerHTML = TARIFF_JSON.gazette_releases.map(g => {
+                const label = g.effective_from || g.gazette_date;
+                return `<option value="${g.gazette_id}">${translateText(label, state.lang)}</option>`;
+            }).join('');
+            gazSel.value = state.selectedGazetteId;
+
+            const trSpecSel = document.getElementById('select-trendSpecific');
+            trSpecSel.innerHTML = TARIFF_JSON.gazette_releases.map(g => {
+                const label = g.effective_from || g.gazette_date;
+                return `<option value="${g.gazette_id}">${translateText(label, state.lang)}</option>`;
+            }).join('');
+            trSpecSel.value = state.trendSpecificId;
+
+            const trBaseSel = document.getElementById('select-trendBase');
+            if (trBaseSel) {
+                const opts = trBaseSel.querySelectorAll('option[data-translate]');
+                opts.forEach(opt => {
+                    const key = opt.getAttribute('data-translate');
+                    const dict = TRANSLATIONS[state.lang] || TRANSLATIONS['en'];
+                    if (dict[key]) opt.textContent = dict[key];
+                });
+            }
+        };
+
+        const setLanguage = (lang) => {
+            state.lang = lang;
+            
+            const btnEn = document.getElementById('btn-lang-en');
+            const btnBn = document.getElementById('btn-lang-bn');
+            
+            if (lang === 'en') {
+                btnEn.className = "px-3 py-1.5 rounded-md text-xs font-bold transition-all bg-white shadow text-slate-800 focus:outline-none";
+                btnBn.className = "px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-800 focus:outline-none";
+            } else {
+                btnBn.className = "px-3 py-1.5 rounded-md text-xs font-bold transition-all bg-white shadow text-slate-800 focus:outline-none";
+                btnEn.className = "px-3 py-1.5 rounded-md text-xs font-bold transition-all text-slate-500 hover:text-slate-800 focus:outline-none";
+            }
+            
+            applyStaticTranslations(lang);
+            populateDropdowns();
+            renderEnergyInputs();
+            updateApp();
+        };
+
         // --- 6. DATA FETCH & INITIALIZATION ---
         const initApp = () => {
             // Populate Source Repo Link
@@ -937,14 +1053,15 @@
             }
 
             // Populate Selects
+            populateDropdowns();
+
+            // Language switching event listeners
+            document.getElementById('btn-lang-en').addEventListener('click', () => setLanguage('en'));
+            document.getElementById('btn-lang-bn').addEventListener('click', () => setLanguage('bn'));
+
             const catSel = document.getElementById('select-category');
-            catSel.innerHTML = TARIFF_JSON.customer_categories.map(c => `<option value="${c.id}">${c.id} - ${c.name} [${c.tension}]</option>`).join('');
-
             const gazSel = document.getElementById('select-gazette');
-            gazSel.innerHTML = TARIFF_JSON.gazette_releases.map(g => `<option value="${g.gazette_id}">${g.effective_from || g.gazette_date}</option>`).join('');
-
             const trSpecSel = document.getElementById('select-trendSpecific');
-            trSpecSel.innerHTML = TARIFF_JSON.gazette_releases.map(g => `<option value="${g.gazette_id}">${g.effective_from || g.gazette_date}</option>`).join('');
 
             catSel.addEventListener('change', (e) => {
                 state.selectedCategoryId = e.target.value;
