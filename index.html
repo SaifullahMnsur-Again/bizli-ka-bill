@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bizli Kaa Bill</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Hide number arrows */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+        
+        /* Tooltip */
+        .tooltip-content { display: none; opacity: 0; transition: opacity 0.2s; }
+        .group:hover .tooltip-content { display: block; opacity: 1; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen p-4 md:p-8 relative">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-50 z-50 flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="p-5 bg-indigo-600 rounded-2xl text-white shadow-xl shadow-indigo-600/30 animate-pulse mb-6">
+            <i data-lucide="zap" class="w-12 h-12"></i>
+        </div>
+        <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight mb-2">Bizli Kaa Bill</h2>
+        <p class="text-slate-500 font-medium text-sm flex items-center gap-2">
+            <i data-lucide="loader-2" class="w-4 h-4 animate-spin text-indigo-600"></i> Fetching Tariff Data Engine...
+        </p>
+    </div>
+
+    <!-- Main Content wrapper (hidden until loaded) -->
+    <div id="main-content" class="opacity-0 transition-opacity duration-500">
+        <!-- Header -->
+        <div class="max-w-6xl mx-auto mb-8">
+            <div class="flex items-start gap-4 mb-2">
+                <div class="p-3 bg-indigo-600 rounded-xl text-white shadow-md shadow-indigo-600/20 shrink-0 mt-1">
+                    <i data-lucide="zap" class="w-8 h-8"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">Bizli Kaa Bill</h1>
+                    <p class="text-indigo-600 font-bold italic mb-1">"bizli ka bill kaun bharega"</p>
+                    <p class="text-slate-500 font-medium text-sm md:text-base max-w-2xl mt-2">
+                        Electricity bill calculator and comparator based on tariffs from 2015 to 2026. Supports all LT, MT, HT, and EHT consumer categories.
+                    </p>
+                    <!-- <a id="link-sourceRepo" href="#" target="_blank" class="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 text-sm font-bold mt-3 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100 transition-colors">
+                        <i data-lucide="external-link" class="w-4 h-4"></i> BPDB Source Repository
+                    </a> -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Workspace -->
+        <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            <!-- LEFT COLUMN: Input Controls -->
+            <div class="lg:col-span-5 space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-semibold flex items-center gap-2 mb-6 border-b border-slate-100 pb-3">
+                        <i data-lucide="settings-2" class="w-5 h-5 text-indigo-600"></i> Primary Configuration
+                    </h2>
+
+                    <div class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="col-span-1 md:col-span-2">
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Customer Category</label>
+                                <select id="select-category" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium text-slate-800 cursor-pointer"></select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Tariff Schedule</label>
+                                <select id="select-gazette" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none text-slate-800 cursor-pointer"></select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Meter Type</label>
+                                <div class="flex bg-slate-100 rounded-lg p-1">
+                                    <button id="btn-prepaid" class="flex-1 text-sm py-1.5 rounded-md font-medium transition-colors bg-white shadow text-indigo-700">Prepaid</button>
+                                    <button id="btn-postpaid" class="flex-1 text-sm py-1.5 rounded-md font-medium transition-colors text-slate-500 hover:text-slate-700">Postpaid</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="border-slate-100" />
+
+                        <div>
+                            <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i> Energy Consumption
+                            </h3>
+                            <div id="energy-inputs-container"></div>
+                        </div>
+
+                        <hr class="border-slate-100" />
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Approved Load (kW)</label>
+                                <input type="number" id="input-approvedLoad" min="1" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-lg" />
+                            </div>
+
+                            <div id="container-latePayment" class="hidden bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-start gap-3">
+                                <input type="checkbox" id="check-latePayment" class="mt-1 w-4 h-4 text-orange-600 rounded cursor-pointer" />
+                                <label for="check-latePayment" class="text-sm text-orange-800 cursor-pointer">
+                                    <span class="font-semibold block">Bill Paid After Due Date?</span>
+                                    Postpaid bills incur a <span id="label-late-pct">5%</span> late payment surcharge.
+                                </label>
+                            </div>
+
+                            <div class="space-y-3 pt-2">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="check-overrideActual" class="w-4 h-4 text-indigo-600 rounded cursor-pointer" />
+                                    <div class="flex-1 group relative">
+                                        <label for="check-overrideActual" class="text-sm font-semibold text-slate-700 flex items-center gap-2 cursor-pointer w-max">
+                                            Override Actual Demand
+                                            <i data-lucide="info" class="w-4 h-4 text-slate-400"></i>
+                                        </label>
+                                        <div class="tooltip-content absolute bottom-full mb-2 left-0 w-64 p-2 bg-slate-800 text-white text-xs rounded shadow-lg z-50">
+                                            Excess kW is penalized at 2x the standard Demand Charge rate.
+                                        </div>
+                                    </div>
+                                    <input type="number" id="input-actualLoad" min="0" step="0.1" class="hidden w-24 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono" />
+                                </div>
+
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="check-overridePf" class="w-4 h-4 text-indigo-600 rounded cursor-pointer" />
+                                    <div class="flex-1 group relative">
+                                        <label for="check-overridePf" class="text-sm font-semibold text-slate-700 flex items-center gap-2 cursor-pointer w-max">
+                                            Override Power Factor
+                                            <i data-lucide="info" class="w-4 h-4 text-slate-400"></i>
+                                        </label>
+                                        <div class="tooltip-content absolute bottom-full mb-2 left-0 w-64 p-2 bg-slate-800 text-white text-xs rounded shadow-lg z-50">
+                                            Applies to all MT/HT/EHT, and LT customers &gt;20kW. Drops below minimum incur severe surcharges.
+                                        </div>
+                                    </div>
+                                    <input type="number" id="input-pf" min="0" max="1" step="0.01" class="hidden w-24 bg-slate-50 border border-slate-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono" />
+                                </div>
+
+                                <div id="warning-pf" class="hidden text-xs text-rose-700 bg-rose-50 p-2.5 rounded-lg border border-rose-200 flex gap-2 items-start shadow-sm mt-2">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 mt-0.5"></i>
+                                    <div>
+                                        <span class="font-bold block">PF Surcharge Triggered</span>
+                                        Your PF is below standard. A strict penalty will be applied to your base Energy Charge.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Results Breakdown -->
+            <div class="lg:col-span-7">
+                <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl shadow-xl p-6 md:p-8 text-white flex flex-col relative overflow-hidden h-[640px]">
+                    
+                    <div class="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                        <i data-lucide="calculator" class="w-48 h-48"></i>
+                    </div>
+
+                    <div class="flex justify-between items-start mb-8 relative z-10">
+                        <div>
+                            <h2 class="text-lg font-medium text-indigo-200">Estimated Total Bill</h2>
+                            <div class="text-4xl md:text-5xl font-bold mt-2 tracking-tight flex items-baseline">
+                                <span class="text-2xl text-indigo-300 mr-2 font-normal">Tk</span>
+                                <span id="display-grandTotal">0</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <a id="display-gazetteName" href="#" target="_blank" class="inline-flex items-center gap-1.5 bg-indigo-500/20 hover:bg-indigo-500/30 transition-colors rounded-lg px-3 py-1 text-sm text-indigo-100 font-medium border border-indigo-400/30">
+                                -
+                            </a>
+                            <div id="display-meterCategory" class="text-xs text-indigo-300 mt-2 uppercase tracking-wider font-bold">
+                                -
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 flex flex-row gap-6 relative z-10 bg-white/5 rounded-xl p-5 backdrop-blur-md border border-white/10">
+                        
+                        <!-- Vertical Stacked Bar Chart -->
+                        <div class="w-12 md:w-16 flex-shrink-0 flex flex-col justify-end bg-black/20 rounded-lg overflow-hidden border border-white/5 relative group">
+                            <!-- Tooltip for bar segments -->
+                            <div id="bar-tooltip" class="absolute -left-2 top-0 -translate-x-full bg-slate-800 text-white text-xs px-2 py-1.5 rounded shadow-xl opacity-0 transition-opacity pointer-events-none whitespace-nowrap z-20 flex flex-col">
+                                <span id="bar-tooltip-label" class="font-bold text-[10px] text-slate-400 uppercase tracking-wide"></span>
+                                <div class="flex gap-2 items-baseline">
+                                    <span id="bar-tooltip-pct" class="font-bold"></span>
+                                    <span id="bar-tooltip-val" class="font-mono text-indigo-300"></span>
+                                </div>
+                            </div>
+
+                            <!-- Stack Segments -->
+                            <div id="bar-segment-vat" class="w-full bg-emerald-500 hover:brightness-110 transition-all cursor-pointer" style="height: 0%"></div>
+                            <div id="bar-segment-penalty" class="w-full bg-rose-500 hover:brightness-110 transition-all cursor-pointer" style="height: 0%"></div>
+                            <div id="bar-segment-dc" class="w-full bg-orange-500 hover:brightness-110 transition-all cursor-pointer" style="height: 0%"></div>
+                            <div id="bar-segment-ec" class="w-full bg-blue-500 hover:brightness-110 transition-all cursor-pointer" style="height: 0%"></div>
+                        </div>
+
+                        <!-- Breakdown List acting as legend -->
+                        <div class="flex-1 flex flex-col space-y-3 justify-start pt-2">
+                            <h3 class="text-sm font-bold text-indigo-200 uppercase tracking-wider mb-2 flex items-center gap-2 border-b border-white/10 pb-2">
+                                <i data-lucide="list-checks" class="w-4 h-4"></i> Itemized Breakdown
+                            </h3>
+                            
+                            <div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+                                        <span class="text-slate-200 font-medium" id="label-ec">Energy Charge</span>
+                                    </div>
+                                    <span class="font-mono text-white font-semibold" id="val-ec">৳0</span>
+                                </div>
+                                <div id="container-slabs" class="pl-4 py-1.5 space-y-1.5 border-l border-blue-500/30 ml-1 mt-1.5 mb-2">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-between items-center text-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-orange-500"></div>
+                                    <div class="flex flex-col">
+                                        <span class="text-slate-200">Demand Charge</span>
+                                        <span class="text-[10px] text-indigo-300/70" id="label-dc-desc">-</span>
+                                    </div>
+                                </div>
+                                <span class="font-mono" id="val-dc">৳0</span>
+                            </div>
+                            
+                            <div id="container-penalties" class="space-y-2 pt-2 border-t border-white/10 mt-2 hidden"></div>
+                            
+                            <div id="container-rebate" class="flex justify-between items-center text-sm text-emerald-400 bg-emerald-950/30 -mx-2 px-2 py-1 rounded hidden">
+                                <span class="font-semibold" id="label-rebate">Prepaid Rebate</span>
+                                <span class="font-mono font-bold" id="val-rebate">-৳0</span>
+                            </div>
+
+                            <div class="h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent my-2"></div>
+
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-slate-300 font-medium">Net Bill (Before VAT)</span>
+                                <span class="font-mono font-semibold" id="val-netBill">৳0</span>
+                            </div>
+                            
+                            <div class="flex justify-between items-center text-sm">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                    <span class="text-slate-300" id="label-vat">Govt. VAT</span>
+                                </div>
+                                <span class="font-mono" id="val-vat">৳0</span>
+                            </div>
+                            
+                            <div id="container-lateFee" class="flex justify-between items-center text-sm text-orange-300 hidden">
+                                <span>Late Payment Surcharge</span>
+                                <span class="font-mono" id="val-lateFee">৳0</span>
+                            </div>
+
+                            <div class="h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent my-1"></div>
+
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-indigo-200 font-bold uppercase tracking-wider">Total Payable</span>
+                                <span class="font-mono font-bold text-lg text-indigo-300" id="val-totalPayable">৳0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-xs text-indigo-200/50 text-center flex items-center justify-center gap-1 z-10 relative">
+                        <i data-lucide="external-link" class="w-3 h-3"></i>
+                        <a id="link-bottomSource" href="#" target="_blank" class="hover:text-indigo-200 transition-colors">BPDB Source Repository</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-6xl mx-auto mt-8 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8 mb-12">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 border-b border-slate-100 pb-4">
+                <h2 class="text-xl font-bold flex items-center gap-2 text-slate-800">
+                    <i data-lucide="trending-up" class="w-5 h-5 text-indigo-600"></i>
+                    Historical Bill Trend
+                </h2>
+                
+                <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
+                    <span class="text-xs font-semibold text-slate-500 px-2 uppercase tracking-wider">Compare Vs</span>
+                    <select id="select-trendBase" class="text-sm bg-white border border-slate-300 rounded-md px-2 py-1 outline-none text-slate-700 font-medium cursor-pointer">
+                        <option value="previous">Previous Tariff</option>
+                        <option value="first">First Tariff</option>
+                        <option value="last">Latest Tariff</option>
+                        <option value="specific">Specific Tariff...</option>
+                    </select>
+                    <select id="select-trendSpecific" class="hidden text-sm bg-white border border-slate-300 rounded-md px-2 py-1 outline-none text-slate-700 cursor-pointer"></select>
+                </div>
+            </div>
+
+            <div id="trend-chart-container" class="h-80 w-full relative pt-6 pb-12 mt-4">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. GLOBAL STATE & DATA ---
+        let TARIFF_JSON = null;
+        
+        let state = {
+            selectedCategoryId: 'LT-A',
+            selectedGazetteId: null, // Populated after fetch
+            meterType: 'prepaid',
+            
+            usageSlab: 150,
+            usageFlat: 500,
+            usagePeak: 200,
+            usageOffPeak: 300,
+            usageSuperOffPeak: 100,
+            
+            approvedLoad: 5,
+            actualLoad: 5,
+            isActualEditable: false,
+            
+            pf: 1.0,
+            isPfEditable: false,
+            isLatePayment: false,
+            
+            trendCompareBase: 'previous',
+            trendSpecificId: null // Populated after fetch
+        };
+
+        // --- 2. HELPER FUNCTIONS ---
+        lucide.createIcons();
+        const formatCurrency = (val) => val.toLocaleString('en-BD', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0, maximumFractionDigits: 0 }).replace('BDT', '৳');
+        const formatNumber = (val) => Number(val).toFixed(2);
+        
+        const getCategoryDetails = (id) => {
+            const meta = TARIFF_JSON.customer_categories.find(c => c.id === id);
+            const rateObj = TARIFF_JSON.gazette_releases[0].rates.find(r => r.id === id);
+            const type = rateObj ? rateObj.energy.t : 'flat';
+            const hasSO = rateObj && rateObj.energy.so !== undefined;
+            return { ...meta, type, hasSO };
+        };
+
+        const getRateDataSafe = (gazette, categoryId) => {
+            let rate = gazette.rates.find(r => r.id === categoryId);
+            if (rate) return rate;
+            
+            // Fallbacks for older 2015/2017 gazettes where grouping was different
+            const fallbackMap = {
+                'LT-C1': 'LT-C', 'LT-C2': 'LT-C',
+                'LT-D1': 'LT-D', 'LT-D2': 'LT-D', 'LT-D3': 'LT-D',
+                'MT-1': 'MT-General', 'MT-2': 'MT-General', 'MT-3': 'MT-General', 'MT-4': 'MT-General', 'MT-5': 'MT-General', 'MT-6': 'MT-General', 'MT-7': 'MT-General', 'MT-8': 'MT-General',
+                'HT-1': 'HT-General', 'HT-2': 'HT-General', 'HT-3': 'HT-General', 'HT-4': 'HT-General',
+                'EHT-1': 'EHT-132kV', 'EHT-2': 'EHT-230kV'
+            };
+            if (fallbackMap[categoryId]) return gazette.rates.find(r => r.id === fallbackMap[categoryId]) || null;
+            return null;
+        };
+
+        const capUsage = (val) => Math.max(0, Math.min(Number(val), 5000000000));
+
+        // --- 3. CALCULATION ENGINE ---
+        const calculateBill = (cat, gazette) => {
+            const rateData = getRateDataSafe(gazette, cat.id);
+            const params = gazette.parameters;
+            
+            if (!rateData) return { total: 0, ec: 0, dc: 0, vat: 0, netBill: 0, rebate: 0, penalty: 0, pfSurcharge: 0, lateFee: 0, slabDetails: [], params };
+
+            const energyRates = rateData.energy;
+            let ec = 0;
+            let slabDetails = [];
+            
+            // Evaluate Energy Charge (EC)
+            if (energyRates.t === 'slab') {
+                const units = state.usageSlab;
+                if (units <= 50) {
+                    ec = units * energyRates.ll;
+                    slabDetails.push({ name: 'Lifeline (0-50)', units, rate: energyRates.ll, amount: ec });
+                } else {
+                    let u = units;
+                    if (u > 0) { const step = Math.min(u, 75); const amt = step * energyRates.s1; ec += amt; slabDetails.push({ name: 'Slab 1 (0-75)', units: step, rate: energyRates.s1, amount: amt }); u -= step; }
+                    if (u > 0) { const step = Math.min(u, 125); const amt = step * energyRates.s2; ec += amt; slabDetails.push({ name: 'Slab 2 (76-200)', units: step, rate: energyRates.s2, amount: amt }); u -= step; }
+                    if (u > 0) { const step = Math.min(u, 100); const amt = step * energyRates.s3; ec += amt; slabDetails.push({ name: 'Slab 3 (201-300)', units: step, rate: energyRates.s3, amount: amt }); u -= step; }
+                    if (u > 0) { const step = Math.min(u, 100); const amt = step * energyRates.s4; ec += amt; slabDetails.push({ name: 'Slab 4 (301-400)', units: step, rate: energyRates.s4, amount: amt }); u -= step; }
+                    if (u > 0) { const step = Math.min(u, 200); const amt = step * energyRates.s5; ec += amt; slabDetails.push({ name: 'Slab 5 (401-600)', units: step, rate: energyRates.s5, amount: amt }); u -= step; }
+                    if (u > 0) { const step = u; const amt = step * energyRates.s6; ec += amt; slabDetails.push({ name: 'Slab 6 (>600)', units: step, rate: energyRates.s6, amount: amt }); u -= step; }
+                }
+            } else if (energyRates.t === 'flat') {
+                ec = state.usageFlat * energyRates.f;
+                slabDetails.push({ name: 'Flat Rate', units: state.usageFlat, rate: energyRates.f, amount: ec });
+            } else if (energyRates.t === 'tou') {
+                if (state.usageFlat > 0 && energyRates.f) { ec += state.usageFlat * energyRates.f; slabDetails.push({ name: 'Normal Hours', units: state.usageFlat, rate: energyRates.f, amount: state.usageFlat * energyRates.f }); }
+                if (state.usagePeak > 0 && energyRates.p) { ec += state.usagePeak * energyRates.p; slabDetails.push({ name: 'Peak Hours', units: state.usagePeak, rate: energyRates.p, amount: state.usagePeak * energyRates.p }); }
+                if (state.usageOffPeak > 0 && energyRates.o) { ec += state.usageOffPeak * energyRates.o; slabDetails.push({ name: 'Off-Peak Hours', units: state.usageOffPeak, rate: energyRates.o, amount: state.usageOffPeak * energyRates.o }); }
+                if (cat.hasSO && state.usageSuperOffPeak > 0 && energyRates.so) { ec += state.usageSuperOffPeak * energyRates.so; slabDetails.push({ name: 'Super Off-Peak', units: state.usageSuperOffPeak, rate: energyRates.so, amount: state.usageSuperOffPeak * energyRates.so }); }
+            }
+
+            // Evaluate Demand Charge (DC)
+            let baseDCUnits = state.approvedLoad;
+            let dcRuleDesc = `Approved Load x ৳${rateData.dc || 0}`;
+            const dcRate = rateData.dc || 0;
+            const activeActual = state.isActualEditable ? state.actualLoad : state.approvedLoad;
+
+            if (['HT', 'EHT'].includes(cat.tension)) {
+                baseDCUnits = Math.max(activeActual, state.approvedLoad * params.ht_eht_minimum_dc_percentage);
+                dcRuleDesc = `Max(Actual, Appr. x ${params.ht_eht_minimum_dc_percentage*100}%) x ৳${dcRate}`;
+            }
+
+            const dc = baseDCUnits * dcRate;
+            const penalty = activeActual > state.approvedLoad ? (activeActual - state.approvedLoad) * (dcRate * params.excess_load_penalty_multiplier) : 0;
+            
+            // Evaluate PF Surcharge
+            let pfSurcharge = 0;
+            const isPfApplicable = (cat.tension !== 'LT') || (cat.tension === 'LT' && state.approvedLoad >= 20);
+            const activePf = state.isPfEditable ? state.pf : 1.0;
+            
+            if (isPfApplicable && activePf < params.power_factor_minimum && activePf >= 0.75) {
+                const dropPoints = Math.floor((params.power_factor_minimum - activePf) / 0.01);
+                if (dropPoints > 0) pfSurcharge = ec * (dropPoints * params.power_factor_surcharge_per_0_01_drop);
+            }
+
+            // Final Totals
+            const netBillBeforeRebate = ec + dc + penalty + pfSurcharge;
+            const rebate = state.meterType === 'prepaid' ? netBillBeforeRebate * params.prepaid_rebate_percentage : 0;
+            const netBill = netBillBeforeRebate - rebate;
+            const vat = netBill * params.vat_percentage;
+            const lateFee = (state.meterType === 'postpaid' && state.isLatePayment) ? netBill * params.late_payment_surcharge_percentage : 0;
+
+            const total = netBill + vat + lateFee;
+
+            return { ec, dc, penalty, pfSurcharge, rebate, netBillBeforeRebate, netBill, vat, lateFee, total, gazette, slabDetails, dcRuleDesc, isPfApplicable, params };
+        };
+
+        // --- 4. DOM UPDATERS ---
+        const renderEnergyInputs = () => {
+            const cat = getCategoryDetails(state.selectedCategoryId);
+            const container = document.getElementById('energy-inputs-container');
+            let html = '';
+
+            const createInput = (label, key, val, colorClass, textClass) => `
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 whitespace-nowrap">${label}</label>
+                    <input type="number" min="0" max="5000000000" value="${val}" 
+                           oninput="updateUsageState(this, '${key}')" 
+                           class="w-full ${colorClass} border rounded-lg px-3 py-2.5 focus:ring-2 focus:outline-none font-mono text-base ${textClass}" />
+                </div>
+            `;
+
+            if (cat.type === 'slab') {
+                html = createInput('Total Usage (kWh)', 'usageSlab', state.usageSlab, 'bg-slate-50 border-slate-300 focus:ring-indigo-500', '');
+            } else if (cat.type === 'flat') {
+                html = createInput('Total Usage (kWh)', 'usageFlat', state.usageFlat, 'bg-slate-50 border-slate-300 focus:ring-indigo-500', '');
+            } else if (cat.type === 'tou') {
+                html = `
+                    <div class="space-y-3">
+                        <div class="grid gap-3 ${cat.hasSO ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-3'}">
+                            ${createInput('Normal', 'usageFlat', state.usageFlat, 'bg-slate-50 border-slate-300 focus:ring-indigo-500', '')}
+                            ${createInput('Peak', 'usagePeak', state.usagePeak, 'bg-rose-50 border-rose-200 focus:ring-rose-500', 'text-rose-800')}
+                            ${createInput('Off-Peak', 'usageOffPeak', state.usageOffPeak, 'bg-emerald-50 border-emerald-200 focus:ring-emerald-500', 'text-emerald-800')}
+                            ${cat.hasSO ? createInput('Super Off-Peak', 'usageSuperOffPeak', state.usageSuperOffPeak, 'bg-indigo-50 border-indigo-200 focus:ring-indigo-500', 'text-indigo-800') : ''}
+                        </div>
+                        <div class="text-right text-xs font-bold text-slate-400 font-mono" id="label-total-tou"></div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        };
+
+        window.updateUsageState = (el, key) => {
+            let val = Number(el.value);
+            if (val > 5000000000) { val = 5000000000; el.value = 5000000000; }
+            if (val < 0) { val = 0; el.value = 0; }
+            state[key] = val;
+            updateApp();
+        };
+
+        const updateApp = () => {
+    const cat = getCategoryDetails(state.selectedCategoryId);
+    const currentGazette = TARIFF_JSON.gazette_releases.find(g => g.gazette_id === state.selectedGazetteId);
+    const res = calculateBill(cat, currentGazette);
+    
+    let totalU = 0;
+            if (cat.type === 'slab') totalU = state.usageSlab;
+            else if (cat.type === 'flat') totalU = state.usageFlat;
+            else {
+                totalU = state.usageFlat + state.usagePeak + state.usageOffPeak + (cat.hasSO ? state.usageSuperOffPeak : 0);
+                const touLabel = document.getElementById('label-total-tou');
+                if (touLabel) touLabel.innerText = `Total: ${totalU} kWh`;
+            }
+
+            document.getElementById('display-grandTotal').innerText = Math.round(res.total).toLocaleString('en-IN');
+    
+    const gazetteNameEl = document.getElementById('display-gazetteName');
+    gazetteNameEl.innerHTML = `${res.gazette.gazette_date} <i data-lucide="external-link" class="w-3.5 h-3.5"></i>`;
+    if (res.gazette.source_url) {
+        gazetteNameEl.href = res.gazette.source_url;
+                gazetteNameEl.style.cursor = 'pointer';
+            } else {
+                gazetteNameEl.removeAttribute('href');
+                gazetteNameEl.style.cursor = 'default';
+            }
+            lucide.createIcons({ root: gazetteNameEl.parentElement });
+
+            document.getElementById('display-meterCategory').innerText = `${state.meterType} • ${cat.tension}`;
+
+            document.getElementById('label-ec').innerText = `Energy Charge (${totalU} units)`;
+            document.getElementById('val-ec').innerText = formatCurrency(res.ec);
+            
+            document.getElementById('container-slabs').innerHTML = res.slabDetails.map(slab => 
+                `<div class="flex justify-between text-[11px] text-slate-300"><span>${slab.name} (${slab.units} kWh @ ৳${formatNumber(slab.rate)}/kWh)</span><span class="font-mono">${formatCurrency(slab.amount)}</span></div>`
+            ).join('');
+
+            document.getElementById('label-dc-desc').innerText = res.dcRuleDesc;
+            document.getElementById('val-dc').innerText = formatCurrency(res.dc);
+
+            const penContainer = document.getElementById('container-penalties');
+            let penHtml = '';
+            if (res.penalty > 0) {
+                const actLoad = state.isActualEditable ? state.actualLoad : state.approvedLoad;
+                penHtml += `<div class="flex justify-between items-center text-sm text-rose-300 bg-rose-950/30 -mx-2 px-2 py-1 rounded"><div class="flex flex-col"><span class="font-semibold">Excess Load Penalty</span><span class="text-[10px]">${(actLoad - state.approvedLoad).toFixed(2)} kW @ 2x Rate</span></div><span class="font-mono font-bold">+${formatCurrency(res.penalty)}</span></div>`;
+            }
+            if (res.pfSurcharge > 0) {
+                const activePf = state.isPfEditable ? state.pf : 1.0;
+                penHtml += `<div class="flex justify-between items-center text-sm text-rose-300 bg-rose-950/30 -mx-2 px-2 py-1 rounded"><span class="font-semibold">Power Factor Penalty (PF: ${activePf})</span><span class="font-mono font-bold">+${formatCurrency(res.pfSurcharge)}</span></div>`;
+            }
+            penContainer.innerHTML = penHtml;
+            penContainer.style.display = penHtml ? 'block' : 'none';
+
+            const rebateC = document.getElementById('container-rebate');
+            if (res.rebate > 0) {
+                rebateC.style.display = 'flex';
+                document.getElementById('label-rebate').innerText = `Prepaid Rebate (${(res.params.prepaid_rebate_percentage * 100).toFixed(1)}%)`;
+                document.getElementById('val-rebate').innerText = `-${formatCurrency(res.rebate)}`;
+            } else rebateC.style.display = 'none';
+
+            document.getElementById('val-netBill').innerText = formatCurrency(res.netBill);
+            document.getElementById('label-vat').innerText = `Govt. VAT (${(res.params.vat_percentage * 100).toFixed(0)}%)`;
+            document.getElementById('val-vat').innerText = `+${formatCurrency(res.vat)}`;
+
+            const lateFeeC = document.getElementById('container-lateFee');
+            if (res.lateFee > 0) {
+                lateFeeC.style.display = 'flex';
+                document.getElementById('val-lateFee').innerText = `+${formatCurrency(res.lateFee)}`;
+            } else lateFeeC.style.display = 'none';
+
+            document.getElementById('val-totalPayable').innerText = formatCurrency(res.total);
+
+            // Update Stack Bar Chart Tooltips
+            const grossForChart = res.ec + res.dc + res.penalty + res.pfSurcharge + res.vat + res.lateFee;
+            const pctEc = grossForChart > 0 ? (res.ec / grossForChart) * 100 : 0;
+            const pctDc = grossForChart > 0 ? (res.dc / grossForChart) * 100 : 0;
+            const pctPenalty = grossForChart > 0 ? ((res.penalty + res.pfSurcharge + res.lateFee) / grossForChart) * 100 : 0;
+            const pctVat = grossForChart > 0 ? (res.vat / grossForChart) * 100 : 0;
+
+            const tooltip = document.getElementById('bar-tooltip');
+            const ttLabel = document.getElementById('bar-tooltip-label');
+            const ttPct = document.getElementById('bar-tooltip-pct');
+            const ttVal = document.getElementById('bar-tooltip-val');
+
+            const bindTooltip = (id, height, label, val) => {
+                const el = document.getElementById(id);
+                el.style.height = `${height}%`;
+                el.onmouseover = (e) => {
+                    tooltip.style.opacity = '1';
+                    ttLabel.innerText = label;
+                    ttPct.innerText = `${height.toFixed(1)}%`;
+                    ttVal.innerText = formatCurrency(val);
+                    const rect = el.getBoundingClientRect();
+                    const containerRect = el.parentElement.getBoundingClientRect();
+                    tooltip.style.top = `${rect.top - containerRect.top + (rect.height / 2) - 16}px`;
+                };
+                el.onmouseout = () => tooltip.style.opacity = '0';
+            };
+
+            bindTooltip('bar-segment-ec', pctEc, 'Energy Charge', res.ec);
+            bindTooltip('bar-segment-dc', pctDc, 'Demand Charge', res.dc);
+            bindTooltip('bar-segment-penalty', pctPenalty, 'Penalties & Fees', res.penalty + res.pfSurcharge + res.lateFee);
+            bindTooltip('bar-segment-vat', pctVat, 'Govt. VAT', res.vat);
+
+            if (res.isPfApplicable && state.isPfEditable && state.pf < 0.95) document.getElementById('warning-pf').style.display = 'flex';
+            else document.getElementById('warning-pf').style.display = 'none';
+
+            // Historical Line Chart
+            const allResults = [...TARIFF_JSON.gazette_releases].reverse().map(g => calculateBill(cat, g));
+            const maxTotal = Math.max(...allResults.map(r => r.total));
+            const chartContainer = document.getElementById('trend-chart-container');
+            
+            let svgHtml = `
+                <svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 1000 240">
+                <defs>
+                    <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.1" />
+                        <stop offset="100%" stopColor="#4f46e5" stopOpacity="0" />
+                    </linearGradient>
+                    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#0f172a" flood-opacity="0.08" />
+                    </filter>
+                </defs>
+            `;
+            [0, 0.25, 0.5, 0.75, 1].forEach((tick) => {
+                const y = 180 - (tick * 140);
+                const val = Math.round((maxTotal * 0.8) * tick + (maxTotal * 0.2));
+                svgHtml += `<line x1="0" y1="${y}" x2="1000" y2="${y}" stroke="#f1f5f9" stroke-width="1.5" stroke-dasharray="6 6" />`;
+                svgHtml += `<text x="-10" y="${y + 4}" fill="#94a3b8" font-size="11" font-weight="600" font-family="monospace" text-anchor="end">${val.toLocaleString('en-IN')}</text>`;
+            });
+
+            const points = allResults.map((r, i) => {
+                const x = (i / (allResults.length - 1)) * 1000;
+                const minScale = maxTotal * 0.2; 
+                const range = maxTotal - minScale;
+                const y = range === 0 ? 110 : 180 - (((r.total - minScale) / range) * 140);
+                return { x, y, r, i };
+            });
+
+            const pointStr = points.map(p => `${p.x},${p.y}`).join(' ');
+            svgHtml += `<polygon points="0,180 ${pointStr} 1000,180" fill="url(#lineGrad)" />`;
+            svgHtml += `<polyline points="${pointStr}" fill="none" stroke="#4f46e5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />`;
+
+            points.forEach(p => {
+                const isCurrent = p.r.gazette.gazette_id === state.selectedGazetteId;
+                
+                let pctChange = null;
+                let diffVal = 0;
+                let baseTotal = 0;
+                if (state.trendCompareBase === 'previous' && p.i > 0) baseTotal = points[p.i - 1].r.total;
+                else if (state.trendCompareBase === 'first') baseTotal = points[0].r.total;
+                else if (state.trendCompareBase === 'last') baseTotal = points[points.length - 1].r.total;
+                else if (state.trendCompareBase === 'specific') {
+                    const baseRes = allResults.find(ar => ar.gazette.gazette_id === state.trendSpecificId);
+                    if (baseRes) baseTotal = baseRes.total;
+                }
+                
+                if (baseTotal > 0 && baseTotal !== p.r.total) {
+                    diffVal = p.r.total - baseTotal;
+                    pctChange = (diffVal / baseTotal) * 100;
+                }
+
+                svgHtml += `<circle cx="${p.x}" cy="${p.y}" r="${isCurrent ? 6 : 4}" fill="${isCurrent ? '#4f46e5' : '#fff'}" stroke="#4f46e5" stroke-width="2.5" class="transition-all" />`;
+                
+                let boxWidth = 110;
+                let boxHeight = pctChange !== null ? 42 : 28;
+                let offX = p.i === 0 ? boxWidth/2 - 10 : p.i === points.length - 1 ? -boxWidth/2 + 10 : 0;
+                let boxY = p.y - boxHeight - 16;
+                let isFlipped = false;
+                if (boxY < 10) { boxY = p.y + 20; isFlipped = true; }
+
+                let anchorY = isFlipped ? boxY : boxY + boxHeight;
+                svgHtml += `<line x1="${p.x}" y1="${p.y}" x2="${p.x + offX}" y2="${anchorY}" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2 2" />`;
+
+                svgHtml += `<g transform="translate(${p.x + offX}, ${boxY})">`;
+                svgHtml += `<rect x="${-boxWidth/2}" y="0" width="${boxWidth}" height="${boxHeight}" rx="6" fill="#ffffff" filter="url(#shadow)" stroke="#e2e8f0" stroke-width="1" />`;
+                
+                let valY = pctChange !== null ? 18 : 19;
+                svgHtml += `<text x="0" y="${valY}" fill="#0f172a" font-size="12" font-weight="700" text-anchor="middle">৳${Math.round(p.r.total).toLocaleString('en-IN')}</text>`;
+
+                if (pctChange !== null) {
+                    let diffSign = diffVal > 0 ? '+' : '';
+                    let absDiff = Math.abs(Math.round(diffVal)).toLocaleString('en-IN');
+                    let textColor = pctChange > 0 ? '#dc2626' : pctChange < 0 ? '#16a34a' : '#64748b'; 
+                    svgHtml += `<text x="0" y="33" fill="${textColor}" font-size="10" font-weight="600" text-anchor="middle">${diffSign}৳${absDiff} (${diffSign}${pctChange.toFixed(1)}%)</text>`;
+                }
+
+                svgHtml += `</g>`;
+
+                let displayDate = p.r.gazette.effective_from || p.r.gazette.gazette_date;
+                svgHtml += `<text x="${p.x}" y="205" fill="${isCurrent ? '#4338ca' : '#64748b'}" font-size="11" font-weight="${isCurrent ? '800' : '600'}" text-anchor="end" transform="rotate(-35, ${p.x}, 205)">${displayDate}</text>`;
+            });
+
+            svgHtml += `</svg>`;
+            chartContainer.innerHTML = svgHtml;
+        };
+
+        // --- 5. DATA FETCH & INITIALIZATION ---
+        const initApp = () => {
+    // Populate Source Repo Link
+    if(TARIFF_JSON.metadata && TARIFF_JSON.metadata.source_repository) {
+        // document.getElementById('link-sourceRepo').href = TARIFF_JSON.metadata.source_repository;
+        const bottomLink = document.getElementById('link-bottomSource');
+        if (bottomLink) bottomLink.href = TARIFF_JSON.metadata.source_repository;
+    }
+
+    // Populate Selects
+            const catSel = document.getElementById('select-category');
+            catSel.innerHTML = TARIFF_JSON.customer_categories.map(c => `<option value="${c.id}">${c.id} - ${c.name} [${c.tension}]</option>`).join('');
+            
+            const gazSel = document.getElementById('select-gazette');
+            gazSel.innerHTML = TARIFF_JSON.gazette_releases.map(g => `<option value="${g.gazette_id}">${g.effective_from || g.gazette_date}</option>`).join('');
+            
+            const trSpecSel = document.getElementById('select-trendSpecific');
+            trSpecSel.innerHTML = TARIFF_JSON.gazette_releases.map(g => `<option value="${g.gazette_id}">${g.effective_from || g.gazette_date}</option>`).join('');
+
+            catSel.addEventListener('change', (e) => {
+                state.selectedCategoryId = e.target.value;
+                renderEnergyInputs();
+                updateApp();
+            });
+
+            gazSel.addEventListener('change', e => { state.selectedGazetteId = e.target.value; updateApp(); });
+            
+            const bPre = document.getElementById('btn-prepaid');
+            const bPost = document.getElementById('btn-postpaid');
+            const lPay = document.getElementById('container-latePayment');
+            
+            bPre.addEventListener('click', () => {
+                state.meterType = 'prepaid';
+                bPre.className = 'flex-1 text-sm py-1.5 rounded-md font-medium transition-colors bg-white shadow text-indigo-700';
+                bPost.className = 'flex-1 text-sm py-1.5 rounded-md font-medium transition-colors text-slate-500 hover:text-slate-700';
+                lPay.style.display = 'none';
+                updateApp();
+            });
+            bPost.addEventListener('click', () => {
+                state.meterType = 'postpaid';
+                bPost.className = 'flex-1 text-sm py-1.5 rounded-md font-medium transition-colors bg-white shadow text-indigo-700';
+                bPre.className = 'flex-1 text-sm py-1.5 rounded-md font-medium transition-colors text-slate-500 hover:text-slate-700';
+                lPay.style.display = 'flex';
+                updateApp();
+            });
+
+            document.getElementById('check-latePayment').addEventListener('change', e => { state.isLatePayment = e.target.checked; updateApp(); });
+
+            document.getElementById('input-approvedLoad').value = state.approvedLoad;
+            document.getElementById('input-approvedLoad').addEventListener('input', e => { state.approvedLoad = capUsage(e.target.value); updateApp(); });
+            
+            const checkAct = document.getElementById('check-overrideActual');
+            const inAct = document.getElementById('input-actualLoad');
+            inAct.value = state.actualLoad;
+            checkAct.addEventListener('change', e => { 
+                state.isActualEditable = e.target.checked; 
+                inAct.style.display = e.target.checked ? 'block' : 'none';
+                if (!e.target.checked) state.actualLoad = state.approvedLoad;
+                updateApp();
+            });
+            inAct.addEventListener('input', e => { state.actualLoad = capUsage(e.target.value); updateApp(); });
+
+            const checkPf = document.getElementById('check-overridePf');
+            const inPf = document.getElementById('input-pf');
+            inPf.value = state.pf;
+            checkPf.addEventListener('change', e => {
+                state.isPfEditable = e.target.checked;
+                inPf.style.display = e.target.checked ? 'block' : 'none';
+                if (!e.target.checked) state.pf = 1.0;
+                updateApp();
+            });
+            inPf.addEventListener('input', e => {
+                let v = Number(e.target.value);
+                if (v > 1) { v = 1; e.target.value = 1; }
+                if (v < 0) { v = 0; e.target.value = 0; }
+                state.pf = v;
+                updateApp();
+            });
+
+            const tBase = document.getElementById('select-trendBase');
+            tBase.addEventListener('change', e => {
+                state.trendCompareBase = e.target.value;
+                trSpecSel.style.display = e.target.value === 'specific' ? 'block' : 'none';
+                updateApp();
+            });
+            trSpecSel.addEventListener('change', e => { state.trendSpecificId = e.target.value; updateApp(); });
+
+            renderEnergyInputs();
+            updateApp();
+        };
+
+        // Async Boot
+        async function loadDataAndInit() {
+            try {
+                // Primary fetch (local path for hosted environments)
+                const response = await fetch('./tarrif_rates.json').catch(() => fetch('https://raw.githubusercontent.com/SaifullahMnsur-Again/bizli-ka-bill/main/tarrif_rates.json'));
+                
+                let rawJson;
+                if (!response || !response.ok) {
+                    const fallback = await fetch('https://raw.githubusercontent.com/SaifullahMnsur-Again/bizli-ka-bill/main/tarrif_rates.json');
+                    rawJson = await fallback.json();
+                } else {
+                    // Try to parse. If the local server served index.html instead of a 404, this will throw
+                    try {
+                        rawJson = await response.json();
+                    } catch(e) {
+                        const fallback = await fetch('https://raw.githubusercontent.com/SaifullahMnsur-Again/bizli-ka-bill/main/tarrif_rates.json');
+                        rawJson = await fallback.json();
+                    }
+                }
+                
+                TARIFF_JSON = rawJson;
+                
+                // Populate initial dynamic state
+                state.selectedGazetteId = TARIFF_JSON.gazette_releases[0].gazette_id;
+                state.trendSpecificId = TARIFF_JSON.gazette_releases[TARIFF_JSON.gazette_releases.length - 1].gazette_id;
+
+                // Hide loader and show app
+                document.getElementById('loading-overlay').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    document.getElementById('main-content').style.opacity = '1';
+                }, 500);
+                
+                initApp();
+
+            } catch (e) {
+                console.error("Failed to load tariff data:", e);
+                document.getElementById('loading-overlay').innerHTML = `
+                    <div class="p-6 bg-white rounded-2xl shadow-xl text-center max-w-sm">
+                        <i data-lucide="wifi-off" class="w-12 h-12 text-rose-500 mx-auto mb-4"></i>
+                        <h2 class="text-xl font-bold text-slate-900 mb-2">Connection Error</h2>
+                        <p class="text-sm text-slate-500">Failed to load the tariff rules engine from the server. Please check your internet connection.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadDataAndInit);
+
+    </script>
+</body>
+</html>
